@@ -165,6 +165,7 @@ function addBuffParamsToTeam(team) {
   team.ChainDamage = char1Params.chainAttack + char2Params.chainAttack + char3Params.chainAttack;
   team.UltimateDamage = char1Params.ultimate + char2Params.ultimate + char3Params.ultimate;
 
+  _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params);
   _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Params, char3Params);
 
   const physicalAnomaly = team.PhysicalAnomalyBuildup >= 2 ? team.PhysicalAnomalyBuildup : 0;
@@ -290,6 +291,102 @@ function addBuffParamsToTeam(team) {
 
     return formulaCache[calcExpression](this);
   };
+}
+
+function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params) {
+  var sunnaParams = null;
+  var otherParams = [];
+
+  if (char1 == "Sunna") {
+    sunnaParams = char1Params;
+    otherParams.push(char2Params, char3Params);
+  } else if (char2 == "Sunna") {
+    sunnaParams = char2Params;
+    otherParams.push(char1Params, char3Params);
+  } else if (char3 == "Sunna") {
+    sunnaParams = char3Params;
+    otherParams.push(char1Params, char2Params);
+  }
+
+  if (!sunnaParams) return;
+
+  var sunnaBuildup = sunnaParams.anomalyBuildup;
+  var sunnaDamage = sunnaParams.damageFocus;
+  var sourceAttribute = sunnaParams.attribute;
+
+  // Remove from Source
+  if (sourceAttribute == "Physical") {
+    team.PhysicalAnomalyBuildup -= sunnaBuildup;
+    team.PhysicalDamage -= sunnaDamage;
+    team.NumPhysical -= 1;
+  } else if (sourceAttribute == "Ether") {
+    team.EtherAnomalyBuildup -= sunnaBuildup;
+    team.EtherDamage -= sunnaDamage;
+    team.NumEther -= 1;
+  } else if (sourceAttribute == "Fire") {
+    team.FireAnomalyBuildup -= sunnaBuildup;
+    team.FireDamage -= sunnaDamage;
+    team.NumFire -= 1;
+  } else if (sourceAttribute == "Ice") {
+    team.IceAnomalyBuildup -= sunnaBuildup;
+    team.IceDamage -= sunnaDamage;
+    team.NumIce -= 1;
+  } else if (sourceAttribute == "Electric") {
+    team.ElectricAnomalyBuildup -= sunnaBuildup;
+    team.ElectricDamage -= sunnaDamage;
+    team.NumElectric -= 1;
+  }
+
+  // Calculate qualifying damage focus for proportional split
+  var totalQualifyingDamageFocus = 0;
+  var qualifyingTeammates = [];
+
+  otherParams.forEach(function(params) {
+    if (params.attack == 1 || params.anomaly == 1) {
+      totalQualifyingDamageFocus += params.damageFocus;
+      qualifyingTeammates.push({
+        params: params,
+        weight: params.damageFocus
+      });
+    }
+  });
+
+  if (totalQualifyingDamageFocus <= 0) return;
+
+  // Add to Targets proportionally
+  qualifyingTeammates.forEach(function(item) {
+    var ratio = item.weight / totalQualifyingDamageFocus;
+    var targetAttribute = item.params.attribute;
+
+    // We only add fractional counts for attributes if we want to represent "partial" presence,
+    // but typically NumAttribute is an integer count of characters.
+    // However, for resonance, maybe it matters?
+    // The previous implementation did `NumTarget += 1`.
+    // If we split, should we add `ratio` to NumTarget?
+    // Let's assume yes, to maintain the logic that "Sunna becomes this attribute".
+
+    if (targetAttribute == "Physical") {
+      team.PhysicalAnomalyBuildup += sunnaBuildup * ratio;
+      team.PhysicalDamage += sunnaDamage * ratio;
+      team.NumPhysical += ratio;
+    } else if (targetAttribute == "Ether") {
+      team.EtherAnomalyBuildup += sunnaBuildup * ratio;
+      team.EtherDamage += sunnaDamage * ratio;
+      team.NumEther += ratio;
+    } else if (targetAttribute == "Fire") {
+      team.FireAnomalyBuildup += sunnaBuildup * ratio;
+      team.FireDamage += sunnaDamage * ratio;
+      team.NumFire += ratio;
+    } else if (targetAttribute == "Ice") {
+      team.IceAnomalyBuildup += sunnaBuildup * ratio;
+      team.IceDamage += sunnaDamage * ratio;
+      team.NumIce += ratio;
+    } else if (targetAttribute == "Electric") {
+      team.ElectricAnomalyBuildup += sunnaBuildup * ratio;
+      team.ElectricDamage += sunnaDamage * ratio;
+      team.NumElectric += ratio;
+    }
+  });
 }
 
 function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Params, char3Params) {
