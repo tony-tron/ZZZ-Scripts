@@ -25,7 +25,7 @@ function onOpen() {
 
 function onEdit(e) {
   const sheetName = SpreadsheetApp.getActiveSheet().getName();
-  if (sheetName === sortedTeamsSheet.getName() && e.range.getA1Notation() === refreshFormulasCheckbox) {
+  if (sheetName === "Sorted Teams" && e.range.getA1Notation() === refreshFormulasCheckbox) {
     SpreadsheetApp.getActive().toast('Refreshing...');
     refreshAllCustomFormulas(true);
   }

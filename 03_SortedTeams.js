@@ -1,13 +1,11 @@
 /** @OnlyCurrentDoc */
 
-const sortedTeamsSheet = thisSpreadsheet.getSheetByName("Sorted Teams");
-const sortedTeamsCheckboxesRange = sortedTeamsSheet.getRange("G1:G2");
-const onlyIncludeBuiltCheckbox = sortedTeamsSheet.getRange("G1");
-const onlyIncludeReleasedCheckbox = sortedTeamsSheet.getRange("G2");
-const sortToTopCheckbox = sortedTeamsSheet.getRange("G8");
-const sortedTeamsRange = sortedTeamsSheet.getRange("A2:D");
+const sortedTeamsSheetName = "Sorted Teams";
 const refreshFormulasCheckbox = "G4";
-const metaStrengthThresholdRange = sortedTeamsSheet.getRange("G5");
+
+function getSortedTeamsSheet() {
+  return thisSpreadsheet.getSheetByName(sortedTeamsSheetName);
+}
 
 /**
  * Grabs the current sorted teams from the sheet, then returns a map of chacter to metadata (pun intended):
@@ -16,6 +14,10 @@ const metaStrengthThresholdRange = sortedTeamsSheet.getRange("G5");
  * - strongestTeams (teams with the max team strength)
  */
 function calculateCharacterMetaData() {
+  const sheet = getSortedTeamsSheet();
+  const sortedTeamsRange = sheet.getRange("A2:D");
+  const metaStrengthThresholdRange = sheet.getRange("G5");
+
   const sortedTeams = sortedTeamsRange.getValues();
   const metaStrengthThreshold = metaStrengthThresholdRange.getValue();
   const charMetaDatas = new Map();
@@ -77,6 +79,10 @@ function calculateCharacterMetaData() {
  * Meanwhile, sets the given checkboxes to update the sorted teams.
  */
 function setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(onlyIncludeBuilt, onlyIncludeReleased) {
+  const sheet = getSortedTeamsSheet();
+  const sortedTeamsCheckboxesRange = sheet.getRange("G1:G2");
+  const sortToTopCheckbox = sheet.getRange("G8");
+
   const oldSortedTeamsCheckboxValues = sortedTeamsCheckboxesRange.getValues();
   // Deep copy.
   const tempSortedTeamsCheckboxValues = JSON.parse(JSON.stringify(oldSortedTeamsCheckboxValues));
