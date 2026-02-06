@@ -41,7 +41,7 @@ function onEdit(e) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateDeadlyAssaultSheet();
   }
-  if (sheetName === distinctTeamsSheet.getName() && e.range.getA1Notation() === recalculateDistinctTeamsCheckbox) {
+  if (sheetName === "Distinct Teams" && e.range.getA1Notation() === recalculateDistinctTeamsCheckbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateDistinctTeamsSheet();
   }
