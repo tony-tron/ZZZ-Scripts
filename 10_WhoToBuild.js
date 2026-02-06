@@ -107,12 +107,13 @@ function updateWhoToBuildSheet() {
   const oldSortedTeamsCheckboxValues = setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(
     tempOnlyIncludeBuilt, tempOnlyIncludeReleased);
 
+  const tierListParams = getTierListParams();
   const outputs = [];
   setCharactersBuilt([charactersToConsider[0]], [true]);
-  addOutputForCharacter(outputs, charactersToConsider[0]);
+  addOutputForCharacter(outputs, charactersToConsider[0], tierListParams);
   for (var i = 1; i < charactersToConsider.length; i++) {
     setCharactersBuilt([charactersToConsider[i-1], charactersToConsider[i]], [false, true]);
-    addOutputForCharacter(outputs, charactersToConsider[i]);
+    addOutputForCharacter(outputs, charactersToConsider[i], tierListParams);
   }
   setCharactersBuilt([charactersToConsider[charactersToConsider.length-1]], [false]);
   displayOutputs(outputs);
@@ -121,8 +122,8 @@ function updateWhoToBuildSheet() {
   unbuiltCharactersRange.setValues(unbuiltCharacters);
 }
 
-function addOutputForCharacter(outputs, character) {
-  const metaOutput = calculateCharacterMetaData().get(character);
+function addOutputForCharacter(outputs, character, tierListParams) {
+  const metaOutput = calculateCharacterMetaData(tierListParams).get(character);
   outputs.push({
     character : character,
     numMetaTeams : metaOutput.numMetaTeams,

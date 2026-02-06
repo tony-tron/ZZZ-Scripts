@@ -2,15 +2,20 @@
 
 const tierListSheet = thisSpreadsheet.getSheetByName("Tier List");
 const recalculateTierListCheckbox = "I3";
-const tierListBreakpointsRange = tierListSheet.getRange("F2:G");
-const tierListBreakpoints = tierListBreakpointsRange.getValues();
-const characterOutputRange = tierListSheet.getRange("A2:E");
-const tierListOnlyIncludeBuiltCheckbox = tierListSheet.getRange("I6");
-const tierListOnlyIncludeReleasedCheckbox = tierListSheet.getRange("I7");
-const tierScoreStrongerWeight = tierListSheet.getRange("I8").getValue();
-const topXPercentStrongestTeam = tierListSheet.getRange("I9").getValue();
+
+function getTierListParams() {
+  return {
+    tierScoreStrongerWeight: tierListSheet.getRange("I8").getValue(),
+    topXPercentStrongestTeam: tierListSheet.getRange("I9").getValue(),
+    tierListBreakpoints: tierListSheet.getRange("F2:G").getValues(),
+  };
+}
 
 function updateTierListSheet() {
+  const tierListOnlyIncludeBuiltCheckbox = tierListSheet.getRange("I6");
+  const tierListOnlyIncludeReleasedCheckbox = tierListSheet.getRange("I7");
+  const characterOutputRange = tierListSheet.getRange("A2:E");
+
   const dataValues = tierListSheet.getDataRange().getValues();
   const tempOnlyIncludeBuilt = dataValues
     [tierListOnlyIncludeBuiltCheckbox.getRow() - 1]
@@ -21,7 +26,7 @@ function updateTierListSheet() {
   const oldSortedTeamsCheckboxValues = setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(
     tempOnlyIncludeBuilt, tempOnlyIncludeReleased);
 
-  const charMetaDatas = calculateCharacterMetaData();
+  const charMetaDatas = calculateCharacterMetaData(getTierListParams());
   const characterOutputs = [];
   for (const character of getCharacterNames()) {
     const charMetaData = charMetaDatas.get(character);
@@ -41,13 +46,13 @@ function updateTierListSheet() {
   }
   characterOutputRange.clearContent().setValues(characterOutputs);
 
-  updateTierListFormatting();
+  updateTierListFormatting(characterOutputRange);
 
   sortedTeamsCheckboxesRange.setValues(oldSortedTeamsCheckboxValues);
 }
 
 /** Adds borders between tiers. (Colors are handled via Conditional Formatting) */
-function updateTierListFormatting() {
+function updateTierListFormatting(characterOutputRange) {
   characterOutputRange.setBorder(false, false, false, false, false, false);
   const output = characterOutputRange.getValues();
 
