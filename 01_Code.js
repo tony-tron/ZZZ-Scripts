@@ -29,7 +29,7 @@ function onEdit(e) {
     SpreadsheetApp.getActive().toast('Refreshing...');
     refreshAllCustomFormulas(true);
   }
-  if (sheetName === shiyuDefenseFrontier4Sheet.getName() && e.range.getA1Notation() === recalculateShiyuDefenseFrontier4Checkbox) {
+  if (sheetName === "Shiyu Defense - Frontier 4" && e.range.getA1Notation() === recalculateShiyuDefenseFrontier4Checkbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateShiyuDefenseFrontier4Sheet();
   }
