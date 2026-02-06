@@ -1,13 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const whoToBuildSheet = thisSpreadsheet.getSheetByName("Who To Build");
-const unbuiltCharactersRange = whoToBuildSheet.getRange("A2:B");
-const unbuiltCharacters = unbuiltCharactersRange.getValues();
-const outputRange = whoToBuildSheet.getRange("D2:G");
-const outputClearFormatRange = whoToBuildSheet.getRange("D2:F");
-
 /** Returns true if there is an error in the input, meaning we should abort the rest of the script. */
-function checkAndOutputErrors(numCharactersConsidered) {
+function checkAndOutputErrors(numCharactersConsidered, whoToBuildSheet, outputRange, outputClearFormatRange) {
   const outputMessageRange = whoToBuildSheet.getRange(outputRange.getRow(), outputRange.getColumn());
   var outputMessage = "";
   var isError = false;
@@ -46,7 +40,7 @@ function checkAndOutputErrors(numCharactersConsidered) {
   return isError;
 }
 
-function displayOutputs(outputs) {
+function displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormatRange) {
   outputs.sort((output1, output2) => output2.tierScore - output1.tierScore);
 
   const outputValues = [];
@@ -88,8 +82,14 @@ function displayOutputs(outputs) {
 }
 
 function updateWhoToBuildSheet() {
-  const charactersToConsider = getCharactersToConsider();
-  if (checkAndOutputErrors(charactersToConsider.length)) {
+  const whoToBuildSheet = thisSpreadsheet.getSheetByName("Who To Build");
+  const unbuiltCharactersRange = whoToBuildSheet.getRange("A2:B");
+  const unbuiltCharacters = unbuiltCharactersRange.getValues();
+  const outputRange = whoToBuildSheet.getRange("D2:G");
+  const outputClearFormatRange = whoToBuildSheet.getRange("D2:F");
+
+  const charactersToConsider = getCharactersToConsider(unbuiltCharacters);
+  if (checkAndOutputErrors(charactersToConsider.length, whoToBuildSheet, outputRange, outputClearFormatRange)) {
     return;
   }
 
@@ -115,7 +115,7 @@ function updateWhoToBuildSheet() {
     addOutputForCharacter(outputs, charactersToConsider[i]);
   }
   setCharactersBuilt([charactersToConsider[charactersToConsider.length-1]], [false]);
-  displayOutputs(outputs);
+  displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormatRange);
 
   sortedTeamsCheckboxesRange.setValues(oldSortedTeamsCheckboxValues);
   unbuiltCharactersRange.setValues(unbuiltCharacters);
@@ -134,7 +134,7 @@ function addOutputForCharacter(outputs, character) {
 }
 
 /** Returns the characters that the user checked in the Who To Build sheet. */
-function getCharactersToConsider() {
+function getCharactersToConsider(unbuiltCharacters) {
   var charactersToConsider = [];
   for (var r = 0; r < unbuiltCharacters.length; r++) {
     const characterName = unbuiltCharacters[r][0];
