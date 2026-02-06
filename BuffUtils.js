@@ -165,6 +165,7 @@ function addBuffParamsToTeam(team) {
   team.ChainDamage = char1Params.chainAttack + char2Params.chainAttack + char3Params.chainAttack;
   team.UltimateDamage = char1Params.ultimate + char2Params.ultimate + char3Params.ultimate;
 
+  _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params);
   _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Params, char3Params);
 
   const physicalAnomaly = team.PhysicalAnomalyBuildup >= 2 ? team.PhysicalAnomalyBuildup : 0;
@@ -290,6 +291,85 @@ function addBuffParamsToTeam(team) {
 
     return formulaCache[calcExpression](this);
   };
+}
+
+function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params) {
+  var sunnaParams = null;
+  var otherParams = [];
+
+  if (char1 == "Sunna") {
+    sunnaParams = char1Params;
+    otherParams.push(char2Params, char3Params);
+  } else if (char2 == "Sunna") {
+    sunnaParams = char2Params;
+    otherParams.push(char1Params, char3Params);
+  } else if (char3 == "Sunna") {
+    sunnaParams = char3Params;
+    otherParams.push(char1Params, char2Params);
+  }
+
+  if (!sunnaParams) return;
+
+  // Find target teammate (highest damage focus + anomaly damage)
+  var targetParams = otherParams.reduce((prev, current) => {
+    var prevScore = prev.damageFocus + prev.anomalyDamage;
+    var currentScore = current.damageFocus + current.anomalyDamage;
+    return (currentScore > prevScore) ? current : prev;
+  });
+
+  var sourceAttribute = sunnaParams.attribute;
+  var targetAttribute = targetParams.attribute;
+
+  if (sourceAttribute == targetAttribute) return;
+
+  var sunnaBuildup = sunnaParams.anomalyBuildup;
+  var sunnaDamage = sunnaParams.damageFocus;
+
+  // Remove from Source
+  if (sourceAttribute == "Physical") {
+    team.PhysicalAnomalyBuildup -= sunnaBuildup;
+    team.PhysicalDamage -= sunnaDamage;
+    team.NumPhysical -= 1;
+  } else if (sourceAttribute == "Ether") {
+    team.EtherAnomalyBuildup -= sunnaBuildup;
+    team.EtherDamage -= sunnaDamage;
+    team.NumEther -= 1;
+  } else if (sourceAttribute == "Fire") {
+    team.FireAnomalyBuildup -= sunnaBuildup;
+    team.FireDamage -= sunnaDamage;
+    team.NumFire -= 1;
+  } else if (sourceAttribute == "Ice") {
+    team.IceAnomalyBuildup -= sunnaBuildup;
+    team.IceDamage -= sunnaDamage;
+    team.NumIce -= 1;
+  } else if (sourceAttribute == "Electric") {
+    team.ElectricAnomalyBuildup -= sunnaBuildup;
+    team.ElectricDamage -= sunnaDamage;
+    team.NumElectric -= 1;
+  }
+
+  // Add to Target
+  if (targetAttribute == "Physical") {
+    team.PhysicalAnomalyBuildup += sunnaBuildup;
+    team.PhysicalDamage += sunnaDamage;
+    team.NumPhysical += 1;
+  } else if (targetAttribute == "Ether") {
+    team.EtherAnomalyBuildup += sunnaBuildup;
+    team.EtherDamage += sunnaDamage;
+    team.NumEther += 1;
+  } else if (targetAttribute == "Fire") {
+    team.FireAnomalyBuildup += sunnaBuildup;
+    team.FireDamage += sunnaDamage;
+    team.NumFire += 1;
+  } else if (targetAttribute == "Ice") {
+    team.IceAnomalyBuildup += sunnaBuildup;
+    team.IceDamage += sunnaDamage;
+    team.NumIce += 1;
+  } else if (targetAttribute == "Electric") {
+    team.ElectricAnomalyBuildup += sunnaBuildup;
+    team.ElectricDamage += sunnaDamage;
+    team.NumElectric += 1;
+  }
 }
 
 function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Params, char3Params) {
