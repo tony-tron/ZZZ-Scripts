@@ -1,15 +1,21 @@
 /** @OnlyCurrentDoc */
 
+const shiyuDefenseFrontier4SheetName = "Shiyu Defense - Frontier 4";
+const shiyuDefenseFrontier4DistinctTeamsA1 = "A2:D";
+const minShiyuDefenseFrontier4TeamStrengthA1 = "G4";
+const maxShiyuDefenseFrontier4OptionsA1 = "G5";
 const recalculateShiyuDefenseFrontier4Checkbox = "G2";
+const shiyuDefenseFrontier4BuffsRangeA1 = "F8:G";
+
 
 function getShiyuDefenseFrontier4Context() {
-  const sheet = thisSpreadsheet.getSheetByName("Shiyu Defense - Frontier 4");
-  const distinctTeamsRange = sheet.getRange("A2:D");
+  const sheet = thisSpreadsheet.getSheetByName(shiyuDefenseFrontier4SheetName);
+  const distinctTeamsRange = sheet.getRange(shiyuDefenseFrontier4DistinctTeamsA1);
   return {
     sheet: sheet,
-    minStrength: sheet.getRange("G4").getValue(),
-    maxOptions: sheet.getRange("G5").getValue(),
-    buffRange: sheet.getRange("F8:G"),
+    minStrength: sheet.getRange(minShiyuDefenseFrontier4TeamStrengthA1).getValue(),
+    maxOptions: sheet.getRange(maxShiyuDefenseFrontier4OptionsA1).getValue(),
+    buffRange: sheet.getRange(shiyuDefenseFrontier4BuffsRangeA1),
     distinctTeamsRange: distinctTeamsRange,
     startRow: distinctTeamsRange.getRow(),
     startColumn: distinctTeamsRange.getColumn()
