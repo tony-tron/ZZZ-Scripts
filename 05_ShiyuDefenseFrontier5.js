@@ -1,23 +1,25 @@
 /** @OnlyCurrentDoc */
 
-const shiyuDefenseFrontier5Sheet = thisSpreadsheet.getSheetByName("Shiyu Defense - Frontier 5");
-const minShiyuDefenseFrontier5TeamStrength = shiyuDefenseFrontier5Sheet.getRange("G4").getValue();
-const maxShiyuDefenseFrontier5Options = shiyuDefenseFrontier5Sheet.getRange("G5").getValue();
+const shiyuDefenseFrontier5SheetName = "Shiyu Defense - Frontier 5";
+const minShiyuDefenseFrontier5TeamStrengthRange = "G4";
+const maxShiyuDefenseFrontier5OptionsRange = "G5";
 const recalculateShiyuDefenseFrontier5Checkbox = "G2";
+const shiyuDefenseFrontier5DistinctTeamsRange = "A2:D";
+const shiyuDefenseFrontier5BuffsRangeAddress = "F8:G";
 
-const shiyuDefenseFrontier5DistinctTeams = shiyuDefenseFrontier5Sheet.getRange("A2:D");
-const shiyuDefenseFrontier5TeamsRow = shiyuDefenseFrontier5DistinctTeams.getRow();
-const shiyuDefenseFrontier5TeamsColumn = shiyuDefenseFrontier5DistinctTeams.getColumn();
-
-const shiyuDefenseFrontier5BuffsRange = shiyuDefenseFrontier5Sheet.getRange("F8:G");
 var shiyuDefenseFrontier5Team1BuffExpressions = [];
 var shiyuDefenseFrontier5Team2BuffExpressions = [];
 var shiyuDefenseFrontier5Team3BuffExpressions = [];
+
+function getShiyuDefenseFrontier5Sheet() {
+  return thisSpreadsheet.getSheetByName(shiyuDefenseFrontier5SheetName);
+}
 
 function initalizeShiyuDefenseFrontier5BuffExpressions() {
   shiyuDefenseFrontier5Team1BuffExpressions = [];
   shiyuDefenseFrontier5Team2BuffExpressions = [];
   shiyuDefenseFrontier5Team3BuffExpressions = [];
+  const shiyuDefenseFrontier5BuffsRange = getShiyuDefenseFrontier5Sheet().getRange(shiyuDefenseFrontier5BuffsRangeAddress);
   const buffNamesAndExpressions = shiyuDefenseFrontier5BuffsRange.getValues();
 
   var expression;
@@ -75,6 +77,7 @@ function initalizeShiyuDefenseFrontier5BuffExpressions() {
 function updateShiyuDefenseFrontier5Sheet() {
   initalizeShiyuDefenseFrontier5BuffExpressions();
   clearShiyuDefenseFrontier5Teams();
+  const minShiyuDefenseFrontier5TeamStrength = getShiyuDefenseFrontier5Sheet().getRange(minShiyuDefenseFrontier5TeamStrengthRange).getValue();
   const allTeams = getAllTeams(minShiyuDefenseFrontier5TeamStrength);
   const teamTriples = computeBestDistinctTeamTriples(allTeams, shiyuDefenseFrontier5Team1BuffExpressions, shiyuDefenseFrontier5Team2BuffExpressions, shiyuDefenseFrontier5Team3BuffExpressions);
   const sortedTriples = teamTriples.sort((triple1, triple2) => triple2.minStrength() - triple1.minStrength() || triple2.totalStrength() - triple1.totalStrength());
@@ -82,14 +85,25 @@ function updateShiyuDefenseFrontier5Sheet() {
 }
 
 function clearShiyuDefenseFrontier5Teams() {
+  const shiyuDefenseFrontier5DistinctTeams = getShiyuDefenseFrontier5Sheet().getRange(shiyuDefenseFrontier5DistinctTeamsRange);
   shiyuDefenseFrontier5DistinctTeams.clearContent().breakApart();
 }
 
 function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
+  const sheet = getShiyuDefenseFrontier5Sheet();
+  const shiyuDefenseFrontier5DistinctTeams = sheet.getRange(shiyuDefenseFrontier5DistinctTeamsRange);
+  const shiyuDefenseFrontier5TeamsRow = shiyuDefenseFrontier5DistinctTeams.getRow();
+  const shiyuDefenseFrontier5TeamsColumn = shiyuDefenseFrontier5DistinctTeams.getColumn();
+  const maxShiyuDefenseFrontier5Options = sheet.getRange(maxShiyuDefenseFrontier5OptionsRange).getValue();
+
   if (teamTriples.length == 0) {
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
   }
-  for (var i = 0; i < teamTriples.length && i < maxShiyuDefenseFrontier5Options; i++) {
+
+  var outputValues = [];
+  var limit = Math.min(teamTriples.length, maxShiyuDefenseFrontier5Options);
+
+  for (var i = 0; i < limit; i++) {
     var teamTriple = teamTriples[i];
     var team1 = teamTriple.team1;
     var team2 = teamTriple.team2;
@@ -98,9 +112,23 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
       team1.strength +  " + " + teamTriple.team1Bonus + " \n+ " +
       team2.strength + " + " + teamTriple.team2Bonus + "\n= " +
       team3.strength + " + " + teamTriple.team3Bonus + "\n= " + teamTriple.totalStrength() + " (min=" + teamTriple.minStrength() + ")";
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team1.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + 1 + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team2.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + 2 + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team3.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, shiyuDefenseFrontier5TeamsColumn + 3, 3, 1).setValue(strengthString).setVerticalAlignment('middle').setHorizontalAlignment('center').mergeVertically();
+
+    outputValues.push([...team1.characters, strengthString]);
+    outputValues.push([...team2.characters, ""]);
+    outputValues.push([...team3.characters, ""]);
+    outputValues.push(["", "", "", ""]);
+  }
+
+  if (outputValues.length > 0) {
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, outputValues.length, 4).setValues(outputValues);
+
+    var strengthColIndex = shiyuDefenseFrontier5TeamsColumn + 3;
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, strengthColIndex, outputValues.length, 1)
+      .setVerticalAlignment('middle')
+      .setHorizontalAlignment('center');
+
+    for (var i = 0; i < limit; i++) {
+      sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, strengthColIndex, 3, 1).mergeVertically();
+    }
   }
 }

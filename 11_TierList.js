@@ -1,27 +1,39 @@
 /** @OnlyCurrentDoc */
 
-const tierListSheet = thisSpreadsheet.getSheetByName("Tier List");
+const tierListSheetName = "Tier List";
+const tierListSheet = thisSpreadsheet.getSheetByName(tierListSheetName);
 const recalculateTierListCheckbox = "I3";
-const tierListBreakpointsRange = tierListSheet.getRange("F2:G");
-const tierListBreakpoints = tierListBreakpointsRange.getValues();
-const characterOutputRange = tierListSheet.getRange("A2:E");
-const tierListOnlyIncludeBuiltCheckbox = tierListSheet.getRange("I6");
-const tierListOnlyIncludeReleasedCheckbox = tierListSheet.getRange("I7");
-const tierScoreStrongerWeight = tierListSheet.getRange("I8").getValue();
-const topXPercentStrongestTeam = tierListSheet.getRange("I9").getValue();
+const tierListBreakpointsRange = "F2:G";
+const characterOutputRange = "A2:E";
+const tierListOnlyIncludeBuiltCheckbox = "I6";
+const tierListOnlyIncludeReleasedCheckbox = "I7";
+const tierScoreStrongerWeightRange = "I8";
+const topXPercentStrongestTeamRange = "I9";
+
+function getTierListParams() {
+  return {
+    tierScoreStrongerWeight: tierListSheet.getRange(tierScoreStrongerWeightRange).getValue(),
+    topXPercentStrongestTeam: tierListSheet.getRange(topXPercentStrongestTeamRange).getValue(),
+    tierListBreakpoints: tierListSheet.getRange(tierListBreakpointsRange).getValues(),
+  };
+}
 
 function updateTierListSheet() {
+  const tierListOnlyIncludeBuiltCheckboxRange = tierListSheet.getRange(tierListOnlyIncludeBuiltCheckbox);
+  const tierListOnlyIncludeReleasedCheckboxRange = tierListSheet.getRange(tierListOnlyIncludeReleasedCheckbox);
+  const characterOutputRangeObj = tierListSheet.getRange(characterOutputRange);
+
   const dataValues = tierListSheet.getDataRange().getValues();
   const tempOnlyIncludeBuilt = dataValues
-    [tierListOnlyIncludeBuiltCheckbox.getRow() - 1]
-    [tierListOnlyIncludeBuiltCheckbox.getColumn() - 1];
+    [tierListOnlyIncludeBuiltCheckboxRange.getRow() - 1]
+    [tierListOnlyIncludeBuiltCheckboxRange.getColumn() - 1];
   const tempOnlyIncludeReleased = dataValues
-    [tierListOnlyIncludeReleasedCheckbox.getRow() - 1]
-    [tierListOnlyIncludeReleasedCheckbox.getColumn() - 1];
+    [tierListOnlyIncludeReleasedCheckboxRange.getRow() - 1]
+    [tierListOnlyIncludeReleasedCheckboxRange.getColumn() - 1];
   const oldSortedTeamsCheckboxValues = setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(
     tempOnlyIncludeBuilt, tempOnlyIncludeReleased);
 
-  const charMetaDatas = calculateCharacterMetaData();
+  const charMetaDatas = calculateCharacterMetaData(getTierListParams());
   const characterOutputs = [];
   for (const character of getCharacterNames()) {
     const charMetaData = charMetaDatas.get(character);
@@ -36,18 +48,18 @@ function updateTierListSheet() {
   }
   characterOutputs.sort((output1, output2) => output2[3] - output1[3]) // Sort based on tierScore, index 3.
 
-  for (var i = characterOutputs.length; i < characterOutputRange.getNumRows(); i++) {
+  for (var i = characterOutputs.length; i < characterOutputRangeObj.getNumRows(); i++) {
     characterOutputs.push([null, null, null, null, null]);
   }
-  characterOutputRange.clearContent().setValues(characterOutputs);
+  characterOutputRangeObj.clearContent().setValues(characterOutputs);
 
-  updateTierListFormatting();
+  updateTierListFormatting(characterOutputRangeObj);
 
   sortedTeamsCheckboxesRange.setValues(oldSortedTeamsCheckboxValues);
 }
 
 /** Adds borders between tiers. (Colors are handled via Conditional Formatting) */
-function updateTierListFormatting() {
+function updateTierListFormatting(characterOutputRange) {
   characterOutputRange.setBorder(false, false, false, false, false, false);
   const output = characterOutputRange.getValues();
 

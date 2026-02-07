@@ -1,17 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const distinctTeamsSheet = thisSpreadsheet.getSheetByName("Distinct Teams");
-const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
-const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
+const distinctTeamsSheetName = "Distinct Teams";
 const recalculateDistinctTeamsCheckbox = "H2";
-
-const outputRangeHeader = distinctTeamsSheet.getRange("A1");
-const distinctTeamsOutputRange = distinctTeamsSheet.getRange("A2:E");
-const distinctTeamsOutputRow = distinctTeamsOutputRange.getRow();
-const distinctTeamsOutputCol = distinctTeamsOutputRange.getColumn();
-
-// Range for buff definitions
-const buffsRange = distinctTeamsSheet.getRange("G7:H");
 
 // Global variables to store the parsed buff data
 var buffExpressionsList = []; // An array of arrays, e.g., [ [slot1 buffs], [slot2 buffs] ]
@@ -20,7 +10,7 @@ var buffOptions = []; // The list of "chosen" buffs
 /**
  * Reads the buff range and populates the global `buffExpressionsList` and `buffOptions`.
  */
-function initalizeBuffExpressions() {
+function initalizeBuffExpressions(buffsRange) {
   // Reset global variables
   buffExpressionsList = [];
   buffOptions = [];
@@ -91,8 +81,20 @@ function initalizeBuffExpressions() {
  * Main function to update the sheet.
  */
 function updateDistinctTeamsSheet() {
-  initalizeBuffExpressions(); // Populates buffExpressionsList
-  clearTeams(); // Clears the single output range
+  const distinctTeamsSheet = thisSpreadsheet.getSheetByName(distinctTeamsSheetName);
+  const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
+  const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
+
+  const outputRangeHeader = distinctTeamsSheet.getRange("A1");
+  const distinctTeamsOutputRange = distinctTeamsSheet.getRange("A2:E");
+  const distinctTeamsOutputRow = distinctTeamsOutputRange.getRow();
+  const distinctTeamsOutputCol = distinctTeamsOutputRange.getColumn();
+
+  // Range for buff definitions
+  const buffsRange = distinctTeamsSheet.getRange("G7:H");
+
+  initalizeBuffExpressions(buffsRange); // Populates buffExpressionsList
+  clearTeams(distinctTeamsOutputRange); // Clears the single output range
   
   const allTeams = getAllTeams(minTeamStrength);
   const k = buffExpressionsList.length; // Number of distinct teams to find
@@ -119,7 +121,7 @@ function updateDistinctTeamsSheet() {
   const sortedTeams = teams.sort((a, b) => b.minStrength() - a.minStrength() || b.totalStrength() - a.totalStrength());
   
   // Call the new generic update function
-  updateSheetWithTeams(sortedTeams, k);
+  updateSheetWithTeams(sortedTeams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol);
 }
 
 /**
@@ -146,14 +148,14 @@ function computeBestDistinctTeams(allTeams, k) {
   }
 }
 
-function clearTeams() {
+function clearTeams(distinctTeamsOutputRange) {
   distinctTeamsOutputRange.clearContent().breakApart();
 }
 
 /**
  * Generic function to write teams to the sheet, formatted by k.
  */
-function updateSheetWithTeams(teams, k) {
+function updateSheetWithTeams(teams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol) {
   if (teams.length === 0) {
     distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol, 1, 5).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
     return;
@@ -163,17 +165,25 @@ function updateSheetWithTeams(teams, k) {
 
   // k = number of teams per group
   const rowHeightPerGroup = k + 1; // k teams + 1 buffer row
-  const teamCharacterCols = 3; // Columns for team characters
-  const strengthColOffset = teamCharacterCols; // e.g., Col 4
-  const chosenBuffColOffset = teamCharacterCols + 1; // e.g., Col 5
+  const numGroups = Math.min(teams.length, maxOptions);
+  const totalRows = numGroups * rowHeightPerGroup;
 
-  for (let i = 0; i < teams.length && i < maxOptions; i++) {
+  if (totalRows === 0) return;
+
+  const teamCharacterCols = 3; // Columns for team characters
+  const strengthColIndex = teamCharacterCols; // Index 3
+  const chosenBuffColIndex = teamCharacterCols + 1; // Index 4
+
+  // Initialize the output array with empty strings
+  // 5 columns: Char1, Char2, Char3, StrengthString, ChosenBuffName
+  const outputValues = new Array(totalRows).fill(null).map(() => ["", "", "", "", ""]);
+
+  for (let i = 0; i < numGroups; i++) {
     const teamGroup = teams[i];
-    const currentRow = distinctTeamsOutputRow + (i * rowHeightPerGroup);
+    const groupStartRowIndex = i * rowHeightPerGroup; // Index in outputValues array
+    const currentRow = distinctTeamsOutputRow + groupStartRowIndex;
 
     let strengthString = "";
-    let chosenBuffNames = [];
-    let teamNames = [];
 
     // Build the data arrays for this group
     for (let j = 1; j <= k; j++) {
@@ -184,8 +194,13 @@ function updateSheetWithTeams(teams, k) {
       const chosenBonus = teamGroup[`team${j}ChosenBonus`] || 0;
       const chosenName = teamGroup[`team${j}ChosenBonusName`] || "";
       
-      teamNames.push(team.characters);
-      chosenBuffNames.push([chosenName]);
+      // Fill characters (Columns 0, 1, 2)
+      outputValues[groupStartRowIndex + j - 1][0] = team.characters[0];
+      outputValues[groupStartRowIndex + j - 1][1] = team.characters[1];
+      outputValues[groupStartRowIndex + j - 1][2] = team.characters[2];
+
+      // Fill chosen buff name (Column 4)
+      outputValues[groupStartRowIndex + j - 1][chosenBuffColIndex] = chosenName;
       
       // Build strength string
       strengthString += `${team.strength} + ${slotBonus}`;
@@ -197,26 +212,22 @@ function updateSheetWithTeams(teams, k) {
     
     strengthString += `= ${teamGroup.totalStrength()} (min= ${teamGroup.minStrength()})`;
 
-    // --- Write data to the sheet ---
-    
-    // 1. Write Team Characters
-    // e.g., getRange(A2, 3 rows, 3 cols) for k=3
-    distinctTeamsSheet.getRange(currentRow, distinctTeamsOutputCol, k, teamCharacterCols)
-      .setValues(teamNames);
-    
-    // 2. Write Strength String
-    // e.g., getRange(D2, 3 rows, 1 col) for k=3
-    distinctTeamsSheet.getRange(currentRow, distinctTeamsOutputCol + strengthColOffset, k, 1)
-      .setValue(strengthString)
-      .setVerticalAlignment('middle')
-      .setHorizontalAlignment('center')
-      .mergeVertically();
+    // Assign strength string to the first row of the group, column index 3 (4th col)
+    outputValues[groupStartRowIndex][strengthColIndex] = strengthString;
 
-    // 3. Write Chosen Buff Names (if they exist on the object)
-    if (teamGroup.hasOwnProperty('team1ChosenBonusName')) {
-      distinctTeamsSheet.getRange(currentRow, distinctTeamsOutputCol + chosenBuffColOffset, k, 1)
-        .setValues(chosenBuffNames)
-        .setHorizontalAlignment('center');
-    }
+    // Apply formatting (Merging and Alignment)
+    // Strength Column (Column 4 -> Index 3 + OutputCol)
+    distinctTeamsSheet.getRange(currentRow, distinctTeamsOutputCol + strengthColIndex, k, 1)
+      .mergeVertically()
+      .setVerticalAlignment('middle')
+      .setHorizontalAlignment('center');
+
+    // Chosen Buff Column (Column 5 -> Index 4 + OutputCol)
+    distinctTeamsSheet.getRange(currentRow, distinctTeamsOutputCol + chosenBuffColIndex, k, 1)
+      .setHorizontalAlignment('center');
   }
+
+  // Write all data at once
+  distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol, totalRows, 5)
+    .setValues(outputValues);
 }
