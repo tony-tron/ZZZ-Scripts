@@ -2,6 +2,10 @@
 
 const sortedTeamsSheetName = "Sorted Teams";
 const refreshFormulasCheckbox = "G4";
+const sortedTeamsCheckboxesRangeString = "G1:G2";
+const sortToTopCheckboxString = "G8";
+const sortedTeamsRangeString = "A2:D";
+const metaStrengthThresholdRangeString = "G5";
 
 function getSortedTeamsSheet() {
   return thisSpreadsheet.getSheetByName(sortedTeamsSheetName);
@@ -15,8 +19,8 @@ function getSortedTeamsSheet() {
  */
 function calculateCharacterMetaData(tierListParams) {
   const sheet = getSortedTeamsSheet();
-  const sortedTeamsRange = sheet.getRange("A2:D");
-  const metaStrengthThresholdRange = sheet.getRange("G5");
+  const sortedTeamsRange = sheet.getRange(sortedTeamsRangeString);
+  const metaStrengthThresholdRange = sheet.getRange(metaStrengthThresholdRangeString);
 
   const sortedTeams = sortedTeamsRange.getValues();
   const metaStrengthThreshold = metaStrengthThresholdRange.getValue();
@@ -80,8 +84,8 @@ function calculateCharacterMetaData(tierListParams) {
  */
 function setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(onlyIncludeBuilt, onlyIncludeReleased) {
   const sheet = getSortedTeamsSheet();
-  const sortedTeamsCheckboxesRange = sheet.getRange("G1:G2");
-  const sortToTopCheckbox = sheet.getRange("G8");
+  const sortedTeamsCheckboxesRange = sheet.getRange(sortedTeamsCheckboxesRangeString);
+  const sortToTopCheckbox = sheet.getRange(sortToTopCheckboxString);
 
   const oldSortedTeamsCheckboxValues = sortedTeamsCheckboxesRange.getValues();
   // Deep copy.
