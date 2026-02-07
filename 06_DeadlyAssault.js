@@ -1,6 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const deadlyAssaultSheet = thisSpreadsheet.getSheetByName("Deadly Assault");
+const deadlyAssaultSheetName = "Deadly Assault";
+const deadlyAssaultSheet = thisSpreadsheet.getSheetByName(deadlyAssaultSheetName);
 const minDeadlyAssaultTeamStrength = deadlyAssaultSheet.getRange("H4").getValue();
 const maxDeadlyAssaultOptions = deadlyAssaultSheet.getRange("H5").getValue();
 const recalculateDeadlyAssaultCheckbox = "H2";

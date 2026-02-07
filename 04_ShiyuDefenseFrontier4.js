@@ -1,6 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const shiyuDefenseFrontier4Sheet = thisSpreadsheet.getSheetByName("Shiyu Defense - Frontier 4");
+const shiyuDefenseFrontier4SheetName = "Shiyu Defense - Frontier 4";
+const shiyuDefenseFrontier4Sheet = thisSpreadsheet.getSheetByName(shiyuDefenseFrontier4SheetName);
 const minShiyuDefenseFrontier4TeamStrength = shiyuDefenseFrontier4Sheet.getRange("G4").getValue();
 const maxShiyuDefenseFrontier4Options = shiyuDefenseFrontier4Sheet.getRange("G5").getValue();
 const recalculateShiyuDefenseFrontier4Checkbox = "G2";

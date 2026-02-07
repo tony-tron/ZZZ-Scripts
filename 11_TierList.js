@@ -1,6 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const tierListSheet = thisSpreadsheet.getSheetByName("Tier List");
+const tierListSheetName = "Tier List";
+const tierListSheet = thisSpreadsheet.getSheetByName(tierListSheetName);
 const recalculateTierListCheckbox = "I3";
 const tierListBreakpointsRange = tierListSheet.getRange("F2:G");
 const tierListBreakpoints = tierListBreakpointsRange.getValues();

@@ -1,6 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const sortedTeamsSheet = thisSpreadsheet.getSheetByName("Sorted Teams");
+const sortedTeamsSheetName = "Sorted Teams";
+const sortedTeamsSheet = thisSpreadsheet.getSheetByName(sortedTeamsSheetName);
 const sortedTeamsCheckboxesRange = sortedTeamsSheet.getRange("G1:G2");
 const onlyIncludeBuiltCheckbox = sortedTeamsSheet.getRange("G1");
 const onlyIncludeReleasedCheckbox = sortedTeamsSheet.getRange("G2");

@@ -1,5 +1,6 @@
 /** @OnlyCurrentDoc */
 
+const distinctTeamsSheetName = "Distinct Teams";
 const recalculateDistinctTeamsCheckbox = "H2";
 
 // Global variables to store the parsed buff data
@@ -80,7 +81,7 @@ function initalizeBuffExpressions(buffsRange) {
  * Main function to update the sheet.
  */
 function updateDistinctTeamsSheet() {
-  const distinctTeamsSheet = thisSpreadsheet.getSheetByName("Distinct Teams");
+  const distinctTeamsSheet = thisSpreadsheet.getSheetByName(distinctTeamsSheetName);
   const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
   const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
 
