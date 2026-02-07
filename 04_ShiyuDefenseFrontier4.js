@@ -1,6 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const shiyuDefenseFrontier4Sheet = thisSpreadsheet.getSheetByName("Shiyu Defense - Frontier 4");
+const shiyuDefenseFrontier4SheetName = "Shiyu Defense - Frontier 4";
+const shiyuDefenseFrontier4Sheet = thisSpreadsheet.getSheetByName(shiyuDefenseFrontier4SheetName);
 const minShiyuDefenseFrontier4TeamStrength = shiyuDefenseFrontier4Sheet.getRange("G4").getValue();
 const maxShiyuDefenseFrontier4Options = shiyuDefenseFrontier4Sheet.getRange("G5").getValue();
 const recalculateShiyuDefenseFrontier4Checkbox = "G2";
@@ -67,6 +68,8 @@ function updateShiyuDefenseFrontier4DistinctTeamsSheet(teamPairs) {
   if (teamPairs.length == 0) {
     shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow, shiyuDefenseFrontier4TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
   }
+  var outputValues = [];
+  var count = 0;
   for (var i = 0; i < teamPairs.length && i < maxShiyuDefenseFrontier4Options; i++) {
     var teamPair = teamPairs[i];
     var team1 = teamPair.team1;
@@ -74,8 +77,19 @@ function updateShiyuDefenseFrontier4DistinctTeamsSheet(teamPairs) {
     var strengthString =
       team1.strength +  " + " + teamPair.team1Bonus + " \n+ " +
       team2.strength + " + " + teamPair.team2Bonus + "\n= " + teamPair.totalStrength() + " (min=" + teamPair.minStrength() + ")";
-    shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow + i * 3, shiyuDefenseFrontier4TeamsColumn, 1, 3).setValues([team1.characters]);
-    shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow + 1 + i * 3, shiyuDefenseFrontier4TeamsColumn, 1, 3).setValues([team2.characters]);
-    shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow + i * 3, shiyuDefenseFrontier4TeamsColumn + 3, 2, 1).setValue(strengthString).setVerticalAlignment('middle').setHorizontalAlignment('center').mergeVertically();
+
+    outputValues.push([...team1.characters, strengthString]);
+    outputValues.push([...team2.characters, ""]);
+    outputValues.push(["", "", "", ""]);
+    count++;
+  }
+
+  if (count > 0) {
+    shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow, shiyuDefenseFrontier4TeamsColumn, count * 3, 4).setValues(outputValues);
+    shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow, shiyuDefenseFrontier4TeamsColumn + 3, count * 3, 1).setVerticalAlignment('middle').setHorizontalAlignment('center');
+
+    for (var i = 0; i < count; i++) {
+      shiyuDefenseFrontier4Sheet.getRange(shiyuDefenseFrontier4TeamsRow + i * 3, shiyuDefenseFrontier4TeamsColumn + 3, 2, 1).mergeVertically();
+    }
   }
 }

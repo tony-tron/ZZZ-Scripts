@@ -25,11 +25,11 @@ function onOpen() {
 
 function onEdit(e) {
   const sheetName = SpreadsheetApp.getActiveSheet().getName();
-  if (sheetName === sortedTeamsSheet.getName() && e.range.getA1Notation() === refreshFormulasCheckbox) {
+  if (sheetName === sortedTeamsSheetName && e.range.getA1Notation() === refreshFormulasCheckbox) {
     SpreadsheetApp.getActive().toast('Refreshing...');
     refreshAllCustomFormulas(true);
   }
-  if (sheetName === shiyuDefenseFrontier4Sheet.getName() && e.range.getA1Notation() === recalculateShiyuDefenseFrontier4Checkbox) {
+  if (sheetName === shiyuDefenseFrontier4SheetName && e.range.getA1Notation() === recalculateShiyuDefenseFrontier4Checkbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateShiyuDefenseFrontier4Sheet();
   }
@@ -37,15 +37,15 @@ function onEdit(e) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateShiyuDefenseFrontier5Sheet();
   }
-  if (sheetName === deadlyAssaultSheet.getName() && e.range.getA1Notation() === recalculateDeadlyAssaultCheckbox) {
+  if (sheetName === deadlyAssaultSheetName && e.range.getA1Notation() === recalculateDeadlyAssaultCheckbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateDeadlyAssaultSheet();
   }
-  if (sheetName === distinctTeamsSheet.getName() && e.range.getA1Notation() === recalculateDistinctTeamsCheckbox) {
+  if (sheetName === distinctTeamsSheetName && e.range.getA1Notation() === recalculateDistinctTeamsCheckbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateDistinctTeamsSheet();
   }
-  if (sheetName === tierListSheet.getName() && e.range.getA1Notation() === recalculateTierListCheckbox) {
+  if (sheetName === tierListSheetName && e.range.getA1Notation() === recalculateTierListCheckbox) {
     SpreadsheetApp.getActive().toast('Recalculating...');
     updateTierListSheet();
   }
