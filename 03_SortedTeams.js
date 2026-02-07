@@ -13,7 +13,7 @@ function getSortedTeamsSheet() {
  * - sortedTeamsStrengths (strengths of all possible teams for the character in descending order)
  * - strongestTeams (teams with the max team strength)
  */
-function calculateCharacterMetaData() {
+function calculateCharacterMetaData(tierListParams) {
   const sheet = getSortedTeamsSheet();
   const sortedTeamsRange = sheet.getRange("A2:D");
   const metaStrengthThresholdRange = sheet.getRange("G5");
@@ -60,11 +60,11 @@ function calculateCharacterMetaData() {
   // Normalize numMetaTeams and maxTeamStrength as "tier score".
   charMetaDatas.forEach((characterMetaData, character, map) => {
     characterMetaData.numMetaTeamsTierScore = characterMetaData.numMetaTeams / maxNumMetaTeams;
-    characterMetaData.maxTeamStrengthTierScore = characterMetaData.sortedTeamsStrengths[Math.round(characterMetaData.sortedTeamsStrengths.length * topXPercentStrongestTeam)] / maxTeamStrength;
+    characterMetaData.maxTeamStrengthTierScore = characterMetaData.sortedTeamsStrengths[Math.round(characterMetaData.sortedTeamsStrengths.length * tierListParams.topXPercentStrongestTeam)] / maxTeamStrength;
     const maxTierScore = Math.max(characterMetaData.numMetaTeamsTierScore, characterMetaData.maxTeamStrengthTierScore);
     const minTierScore = Math.min(characterMetaData.numMetaTeamsTierScore, characterMetaData.maxTeamStrengthTierScore);
-    characterMetaData.tierScore = maxTierScore * tierScoreStrongerWeight + minTierScore * (1-tierScoreStrongerWeight);
-    characterMetaData.tier = tierListBreakpoints.find(breakpoint => breakpoint[0] <= characterMetaData.tierScore)[1];
+    characterMetaData.tierScore = maxTierScore * tierListParams.tierScoreStrongerWeight + minTierScore * (1-tierListParams.tierScoreStrongerWeight);
+    characterMetaData.tier = tierListParams.tierListBreakpoints.find(breakpoint => breakpoint[0] <= characterMetaData.tierScore)[1];
     map.set(character, characterMetaData);
   });
 

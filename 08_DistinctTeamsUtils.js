@@ -266,81 +266,105 @@ function computeBestDistinctTeamQuints(teams, buffExpressionsList, buffOptions) 
   }
 
   const teamQuints = [];
-  const k = 5;
+  const TARGET_DEPTH = 5;
 
-  // This is a 5-nested loop (n C 5)
-  for (let i = 0; i < teams.length; i++) {
-    for (let j = i + 1; j < teams.length; j++) {
-      for (let k = j + 1; k < teams.length; k++) {
-        for (let l = k + 1; l < teams.length; l++) {
-          for (let m = l + 1; m < teams.length; m++) {
-            
-            const teamList = [teams[i], teams[j], teams[k], teams[l], teams[m]];
+  function findTeamCombinations(startIndex, currentTeams, usedCharacters) {
+    // Base case: we have 5 teams
+    if (currentTeams.length === TARGET_DEPTH) {
 
-            if (allTeamsHaveUniqueCharacters(teamList)) {
-              
-              const teamSlots = teamList.map(team => ({ team }));
-              
-              // Run optimization for the 5 slots
-              const result = optimizeTeamAssignments(teamSlots, buffExpressionsList);
+      const teamSlots = currentTeams.map(team => ({ team }));
 
-              // Create the quintuple with the *optimized* team order
-              const teamQuint = {
-                team1: result.optimizedSlots[0].team,
-                team2: result.optimizedSlots[1].team,
-                team3: result.optimizedSlots[2].team,
-                team4: result.optimizedSlots[3].team,
-                team5: result.optimizedSlots[4].team,
-                team1Bonus: result.bonuses[0],
-                team2Bonus: result.bonuses[1],
-                team3Bonus: result.bonuses[2],
-                team4Bonus: result.bonuses[3],
-                team5Bonus: result.bonuses[4],
-                team1ChosenBonusName: "",
-                team2ChosenBonusName: "",
-                team3ChosenBonusName: "",
-                team4ChosenBonusName: "",
-                team5ChosenBonusName: "",
-                team1ChosenBonus: 0,
-                team2ChosenBonus: 0,
-                team3ChosenBonus: 0,
-                team5ChosenBonus: 0,
-              };
+      // Run optimization for the 5 slots
+      const result = optimizeTeamAssignments(teamSlots, buffExpressionsList);
 
-              // Add totalStrength and minStrength functions
-              teamQuint.totalStrength = function() {
-                let base = this.team1.strength + this.team2.strength + this.team3.strength + this.team4.strength + this.team5.strength;
-                let bonus = this.team1Bonus + this.team2Bonus + this.team3Bonus + this.team4Bonus + this.team5Bonus;
-                let chosenBonus = this.team1ChosenBonus + this.team2ChosenBonus + this.team3ChosenBonus + this.team4ChosenBonus + this.team5ChosenBonus;
-                return Math.round((base + bonus + chosenBonus) * 1000) / 1000;
-              };
-              
-              teamQuint.minStrength = function() {
-                return Math.round(Math.min(
-                  this.team1.strength + this.team1Bonus + this.team1ChosenBonus,
-                  this.team2.strength + this.team2Bonus + this.team2ChosenBonus,
-                  this.team3.strength + this.team3Bonus + this.team3ChosenBonus,
-                  this.team4.strength + this.team4Bonus + this.team4ChosenBonus,
-                  this.team5.strength + this.team5Bonus + this.team5ChosenBonus
-                ) * 1000) / 1000;
-              };
+      // Create the quintuple with the *optimized* team order
+      const teamQuint = {
+        team1: result.optimizedSlots[0].team,
+        team2: result.optimizedSlots[1].team,
+        team3: result.optimizedSlots[2].team,
+        team4: result.optimizedSlots[3].team,
+        team5: result.optimizedSlots[4].team,
+        team1Bonus: result.bonuses[0],
+        team2Bonus: result.bonuses[1],
+        team3Bonus: result.bonuses[2],
+        team4Bonus: result.bonuses[3],
+        team5Bonus: result.bonuses[4],
+        team1ChosenBonusName: "",
+        team2ChosenBonusName: "",
+        team3ChosenBonusName: "",
+        team4ChosenBonusName: "",
+        team5ChosenBonusName: "",
+        team1ChosenBonus: 0,
+        team2ChosenBonus: 0,
+        team3ChosenBonus: 0,
+        team4ChosenBonus: 0,
+        team5ChosenBonus: 0,
+      };
 
-              // Apply "chosen" buffs
-              [teamQuint.team1, teamQuint.team2, teamQuint.team3, teamQuint.team4, teamQuint.team5].forEach((team, idx) => {
-                var buffOption = chooseBestBuffForTeam(team, buffOptions);
-                if (buffOption != undefined) {
-                  teamQuint[`team${idx+1}ChosenBonusName`] = buffOption.name;
-                  teamQuint[`team${idx+1}ChosenBonus`] = buffOption.bonus;
-                }
-              });
-              
-              teamQuints.push(teamQuint);
-            }
-          }
+      // Add totalStrength and minStrength functions
+      teamQuint.totalStrength = function() {
+        let base = this.team1.strength + this.team2.strength + this.team3.strength + this.team4.strength + this.team5.strength;
+        let bonus = this.team1Bonus + this.team2Bonus + this.team3Bonus + this.team4Bonus + this.team5Bonus;
+        let chosenBonus = this.team1ChosenBonus + this.team2ChosenBonus + this.team3ChosenBonus + this.team4ChosenBonus + this.team5ChosenBonus;
+        return Math.round((base + bonus + chosenBonus) * 1000) / 1000;
+      };
+
+      teamQuint.minStrength = function() {
+        return Math.round(Math.min(
+          this.team1.strength + this.team1Bonus + this.team1ChosenBonus,
+          this.team2.strength + this.team2Bonus + this.team2ChosenBonus,
+          this.team3.strength + this.team3Bonus + this.team3ChosenBonus,
+          this.team4.strength + this.team4Bonus + this.team4ChosenBonus,
+          this.team5.strength + this.team5Bonus + this.team5ChosenBonus
+        ) * 1000) / 1000;
+      };
+
+      // Apply "chosen" buffs
+      [teamQuint.team1, teamQuint.team2, teamQuint.team3, teamQuint.team4, teamQuint.team5].forEach((team, idx) => {
+        var buffOption = chooseBestBuffForTeam(team, buffOptions);
+        if (buffOption != undefined) {
+          teamQuint[`team${idx+1}ChosenBonusName`] = buffOption.name;
+          teamQuint[`team${idx+1}ChosenBonus`] = buffOption.bonus;
         }
+      });
+
+      teamQuints.push(teamQuint);
+      return;
+    }
+
+    // Recursive step with pruning
+    for (let i = startIndex; i < teams.length; i++) {
+      const team = teams[i];
+      const chars = team.characters;
+
+      // Check for character overlap (Pruning)
+      let overlap = false;
+      for (let c = 0; c < chars.length; c++) {
+        if (usedCharacters.has(chars[c])) {
+          overlap = true;
+          break;
+        }
+      }
+      if (overlap) continue;
+
+      // Add characters to set
+      for (let c = 0; c < chars.length; c++) {
+        usedCharacters.add(chars[c]);
+      }
+
+      // Recurse
+      findTeamCombinations(i + 1, currentTeams.concat([team]), usedCharacters);
+
+      // Backtrack: remove characters from set
+      for (let c = 0; c < chars.length; c++) {
+        usedCharacters.delete(chars[c]);
       }
     }
   }
+
+  // Start recursion
+  findTeamCombinations(0, [], new Set());
+
   return teamQuints;
 }
 
