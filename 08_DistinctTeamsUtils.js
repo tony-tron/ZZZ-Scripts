@@ -1,7 +1,7 @@
 /** @OnlyCurrentDoc */
 
 function getAllTeams(minTeamStrength) {
-  var data = sortedTeamsSheet.getDataRange().getValues();
+  var data = getSortedTeamsSheet().getDataRange().getValues();
   var teams = [];
   for (var r = 1; r < data.length; r++) {
     var team = {
