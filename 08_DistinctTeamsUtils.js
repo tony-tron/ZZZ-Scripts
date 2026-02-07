@@ -4,6 +4,7 @@ function getAllTeams(minTeamStrength) {
   var data = getSortedTeamsSheet().getDataRange().getValues();
   var teams = [];
   for (var r = 1; r < data.length; r++) {
+    if (!data[r][0]) break;
     var team = {
       characters : [data[r][0], data[r][1], data[r][2]],
       strength : data[r][3],
