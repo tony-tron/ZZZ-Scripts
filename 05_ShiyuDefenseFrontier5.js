@@ -89,7 +89,11 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
   if (teamTriples.length == 0) {
     shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
   }
-  for (var i = 0; i < teamTriples.length && i < maxShiyuDefenseFrontier5Options; i++) {
+
+  var outputValues = [];
+  var limit = Math.min(teamTriples.length, maxShiyuDefenseFrontier5Options);
+
+  for (var i = 0; i < limit; i++) {
     var teamTriple = teamTriples[i];
     var team1 = teamTriple.team1;
     var team2 = teamTriple.team2;
@@ -98,9 +102,23 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
       team1.strength +  " + " + teamTriple.team1Bonus + " \n+ " +
       team2.strength + " + " + teamTriple.team2Bonus + "\n= " +
       team3.strength + " + " + teamTriple.team3Bonus + "\n= " + teamTriple.totalStrength() + " (min=" + teamTriple.minStrength() + ")";
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team1.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + 1 + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team2.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + 2 + i * 4, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValues([team3.characters]);
-    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, shiyuDefenseFrontier5TeamsColumn + 3, 3, 1).setValue(strengthString).setVerticalAlignment('middle').setHorizontalAlignment('center').mergeVertically();
+
+    outputValues.push([...team1.characters, strengthString]);
+    outputValues.push([...team2.characters, ""]);
+    outputValues.push([...team3.characters, ""]);
+    outputValues.push(["", "", "", ""]);
+  }
+
+  if (outputValues.length > 0) {
+    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, outputValues.length, 4).setValues(outputValues);
+
+    var strengthColIndex = shiyuDefenseFrontier5TeamsColumn + 3;
+    shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow, strengthColIndex, outputValues.length, 1)
+      .setVerticalAlignment('middle')
+      .setHorizontalAlignment('center');
+
+    for (var i = 0; i < limit; i++) {
+      shiyuDefenseFrontier5Sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, strengthColIndex, 3, 1).mergeVertically();
+    }
   }
 }
