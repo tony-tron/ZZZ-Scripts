@@ -1,17 +1,7 @@
 /** @OnlyCurrentDoc */
 
-const distinctTeamsSheet = thisSpreadsheet.getSheetByName("Distinct Teams");
-const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
-const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
+const distinctTeamsSheetName = "Distinct Teams";
 const recalculateDistinctTeamsCheckbox = "H2";
-
-const outputRangeHeader = distinctTeamsSheet.getRange("A1");
-const distinctTeamsOutputRange = distinctTeamsSheet.getRange("A2:E");
-const distinctTeamsOutputRow = distinctTeamsOutputRange.getRow();
-const distinctTeamsOutputCol = distinctTeamsOutputRange.getColumn();
-
-// Range for buff definitions
-const buffsRange = distinctTeamsSheet.getRange("G7:H");
 
 // Global variables to store the parsed buff data
 var buffExpressionsList = []; // An array of arrays, e.g., [ [slot1 buffs], [slot2 buffs] ]
@@ -20,7 +10,7 @@ var buffOptions = []; // The list of "chosen" buffs
 /**
  * Reads the buff range and populates the global `buffExpressionsList` and `buffOptions`.
  */
-function initalizeBuffExpressions() {
+function initalizeBuffExpressions(buffsRange) {
   // Reset global variables
   buffExpressionsList = [];
   buffOptions = [];
@@ -91,8 +81,20 @@ function initalizeBuffExpressions() {
  * Main function to update the sheet.
  */
 function updateDistinctTeamsSheet() {
-  initalizeBuffExpressions(); // Populates buffExpressionsList
-  clearTeams(); // Clears the single output range
+  const distinctTeamsSheet = thisSpreadsheet.getSheetByName(distinctTeamsSheetName);
+  const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
+  const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
+
+  const outputRangeHeader = distinctTeamsSheet.getRange("A1");
+  const distinctTeamsOutputRange = distinctTeamsSheet.getRange("A2:E");
+  const distinctTeamsOutputRow = distinctTeamsOutputRange.getRow();
+  const distinctTeamsOutputCol = distinctTeamsOutputRange.getColumn();
+
+  // Range for buff definitions
+  const buffsRange = distinctTeamsSheet.getRange("G7:H");
+
+  initalizeBuffExpressions(buffsRange); // Populates buffExpressionsList
+  clearTeams(distinctTeamsOutputRange); // Clears the single output range
   
   const allTeams = getAllTeams(minTeamStrength);
   const k = buffExpressionsList.length; // Number of distinct teams to find
@@ -119,7 +121,7 @@ function updateDistinctTeamsSheet() {
   const sortedTeams = teams.sort((a, b) => b.minStrength() - a.minStrength() || b.totalStrength() - a.totalStrength());
   
   // Call the new generic update function
-  updateSheetWithTeams(sortedTeams, k);
+  updateSheetWithTeams(sortedTeams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol);
 }
 
 /**
@@ -146,14 +148,14 @@ function computeBestDistinctTeams(allTeams, k) {
   }
 }
 
-function clearTeams() {
+function clearTeams(distinctTeamsOutputRange) {
   distinctTeamsOutputRange.clearContent().breakApart();
 }
 
 /**
  * Generic function to write teams to the sheet, formatted by k.
  */
-function updateSheetWithTeams(teams, k) {
+function updateSheetWithTeams(teams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol) {
   if (teams.length === 0) {
     distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol, 1, 5).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
     return;
