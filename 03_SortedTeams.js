@@ -7,8 +7,21 @@ const sortToTopCheckboxString = "G8";
 const sortedTeamsRangeString = "A2:D";
 const metaStrengthThresholdRangeString = "G5";
 
+var _sortedTeamsSheet;
+var _sortedTeamsCheckboxesRange;
+
 function getSortedTeamsSheet() {
-  return thisSpreadsheet.getSheetByName(sortedTeamsSheetName);
+  if (!_sortedTeamsSheet) {
+    _sortedTeamsSheet = getSpreadsheet().getSheetByName(sortedTeamsSheetName);
+  }
+  return _sortedTeamsSheet;
+}
+
+function getSortedTeamsCheckboxesRange() {
+  if (!_sortedTeamsCheckboxesRange) {
+    _sortedTeamsCheckboxesRange = getSortedTeamsSheet().getRange(sortedTeamsCheckboxesRangeString);
+  }
+  return _sortedTeamsCheckboxesRange;
 }
 
 /**
@@ -84,7 +97,7 @@ function calculateCharacterMetaData(tierListParams) {
  */
 function setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(onlyIncludeBuilt, onlyIncludeReleased) {
   const sheet = getSortedTeamsSheet();
-  const sortedTeamsCheckboxesRange = sheet.getRange(sortedTeamsCheckboxesRangeString);
+  const sortedTeamsCheckboxesRange = getSortedTeamsCheckboxesRange();
   const sortToTopCheckbox = sheet.getRange(sortToTopCheckboxString);
 
   const oldSortedTeamsCheckboxValues = sortedTeamsCheckboxesRange.getValues();

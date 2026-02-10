@@ -7,9 +7,17 @@ const maxShiyuDefenseFrontier4OptionsA1 = "G5";
 const recalculateShiyuDefenseFrontier4Checkbox = "G2";
 const shiyuDefenseFrontier4BuffsRangeA1 = "F8:G";
 
+var _shiyuDefenseFrontier4Sheet;
+
+function getShiyuDefenseFrontier4Sheet() {
+  if (!_shiyuDefenseFrontier4Sheet) {
+    _shiyuDefenseFrontier4Sheet = getSpreadsheet().getSheetByName(shiyuDefenseFrontier4SheetName);
+  }
+  return _shiyuDefenseFrontier4Sheet;
+}
 
 function getShiyuDefenseFrontier4Context() {
-  const sheet = thisSpreadsheet.getSheetByName(shiyuDefenseFrontier4SheetName);
+  const sheet = getShiyuDefenseFrontier4Sheet();
   const distinctTeamsRange = sheet.getRange(shiyuDefenseFrontier4DistinctTeamsA1);
   return {
     sheet: sheet,

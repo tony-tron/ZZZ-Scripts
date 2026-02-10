@@ -1,16 +1,33 @@
 /** @OnlyCurrentDoc */
 
 const deadlyAssaultSheetName = "Deadly Assault";
-const deadlyAssaultSheet = thisSpreadsheet.getSheetByName(deadlyAssaultSheetName);
-const minDeadlyAssaultTeamStrength = deadlyAssaultSheet.getRange("H4").getValue();
-const maxDeadlyAssaultOptions = deadlyAssaultSheet.getRange("H5").getValue();
 const recalculateDeadlyAssaultCheckbox = "H2";
 
-const deadlyAssaultDistinctTeams = deadlyAssaultSheet.getRange("A2:E");
-const deadlyAssaultTeamsRow = deadlyAssaultDistinctTeams.getRow();
-const deadlyAssaultTeamsColumn = deadlyAssaultDistinctTeams.getColumn();
+var _deadlyAssaultSheet;
+var _deadlyAssaultDistinctTeamsRange;
+var _deadlyAssaultBuffsRange;
 
-const deadlyAssaultBuffsRange = deadlyAssaultSheet.getRange("G8:H");
+function getDeadlyAssaultSheet() {
+  if (!_deadlyAssaultSheet) {
+    _deadlyAssaultSheet = getSpreadsheet().getSheetByName(deadlyAssaultSheetName);
+  }
+  return _deadlyAssaultSheet;
+}
+
+function getDeadlyAssaultDistinctTeamsRange() {
+  if (!_deadlyAssaultDistinctTeamsRange) {
+    _deadlyAssaultDistinctTeamsRange = getDeadlyAssaultSheet().getRange("A2:E");
+  }
+  return _deadlyAssaultDistinctTeamsRange;
+}
+
+function getDeadlyAssaultBuffsRange() {
+  if (!_deadlyAssaultBuffsRange) {
+    _deadlyAssaultBuffsRange = getDeadlyAssaultSheet().getRange("G8:H");
+  }
+  return _deadlyAssaultBuffsRange;
+}
+
 var deadlyAssaultTeam1BuffExpressions = [];
 var deadlyAssaultTeam2BuffExpressions = [];
 var deadlyAssaultTeam3BuffExpressions = [];
@@ -20,10 +37,13 @@ function initalizeDeadlyAssaultBuffExpressions() {
   deadlyAssaultTeam1BuffExpressions = [];
   deadlyAssaultTeam2BuffExpressions = [];
   deadlyAssaultTeam3BuffExpressions = [];
-  const buffNamesAndExpressions = deadlyAssaultBuffsRange.getValues();
+  deadlyAssaultBuffOptions = [];
+
+  const buffNamesAndExpressions = getDeadlyAssaultBuffsRange().getValues();
 
   var expression;
   var r = 0;
+  var name;
   // Team 1 buffs first.
   for (; r < buffNamesAndExpressions.length; r++) {
     expression = buffNamesAndExpressions[r][1];
@@ -103,20 +123,32 @@ function initalizeDeadlyAssaultBuffExpressions() {
 
 function updateDeadlyAssaultSheet() {
   initalizeDeadlyAssaultBuffExpressions();
+
+  const sheet = getDeadlyAssaultSheet();
+  const minDeadlyAssaultTeamStrength = sheet.getRange("H4").getValue();
+  const maxDeadlyAssaultOptions = sheet.getRange("H5").getValue();
+
+  const deadlyAssaultDistinctTeams = getDeadlyAssaultDistinctTeamsRange();
+
   clearDeadlyAssaultTeams();
   const allTeams = getAllTeams(minDeadlyAssaultTeamStrength);
   const teamTriples = computeBestDistinctTeamTriples(allTeams, deadlyAssaultTeam1BuffExpressions, deadlyAssaultTeam2BuffExpressions, deadlyAssaultTeam3BuffExpressions, deadlyAssaultBuffOptions);
   const sortedTriples = teamTriples.sort((triple1, triple2) => triple2.minStrength() - triple1.minStrength() || triple2.totalStrength() - triple1.totalStrength());
-  updateDeadlyAssaultDistinctTeamsSheet(sortedTriples);
+  updateDeadlyAssaultDistinctTeamsSheet(sortedTriples, maxDeadlyAssaultOptions);
 }
 
 function clearDeadlyAssaultTeams() {
-  deadlyAssaultDistinctTeams.clearContent().breakApart();
+  getDeadlyAssaultDistinctTeamsRange().clearContent().breakApart();
 }
 
-function updateDeadlyAssaultDistinctTeamsSheet(teamTriples) {
+function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, maxDeadlyAssaultOptions) {
+  const sheet = getDeadlyAssaultSheet();
+  const distinctTeamsRange = getDeadlyAssaultDistinctTeamsRange();
+  const deadlyAssaultTeamsRow = distinctTeamsRange.getRow();
+  const deadlyAssaultTeamsColumn = distinctTeamsRange.getColumn();
+
   if (teamTriples.length == 0) {
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow, deadlyAssaultTeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
+    sheet.getRange(deadlyAssaultTeamsRow, deadlyAssaultTeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
   }
   for (var i = 0; i < teamTriples.length && i < maxDeadlyAssaultOptions; i++) {
     var teamTriple = teamTriples[i];
@@ -128,15 +160,15 @@ function updateDeadlyAssaultDistinctTeamsSheet(teamTriples) {
       team2.strength + " + " + teamTriple.team2Bonus + " + " + teamTriple.team2ChosenBonus + "\n+ " +
       team3.strength + " + " + teamTriple.team3Bonus + " + " + teamTriple.team3ChosenBonus + "\n= " +
       teamTriple.totalStrength() + " (min= " + teamTriple.minStrength() + ")";
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn, 1, 3)
+    sheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn, 1, 3)
       .setValues([team1.characters]);
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow + 1 + i * 4, deadlyAssaultTeamsColumn, 1, 3)
+    sheet.getRange(deadlyAssaultTeamsRow + 1 + i * 4, deadlyAssaultTeamsColumn, 1, 3)
       .setValues([team2.characters]);
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow + 2 + i * 4, deadlyAssaultTeamsColumn, 1, 3)
+    sheet.getRange(deadlyAssaultTeamsRow + 2 + i * 4, deadlyAssaultTeamsColumn, 1, 3)
       .setValues([team3.characters]);
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn + 3, 3, 1)
+    sheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn + 3, 3, 1)
       .setValue(strengthString).setVerticalAlignment('middle').setHorizontalAlignment('center').mergeVertically();
-    deadlyAssaultSheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn + 4, 3, 1)
+    sheet.getRange(deadlyAssaultTeamsRow + i * 4, deadlyAssaultTeamsColumn + 4, 3, 1)
       .setValues([[teamTriple.team1ChosenBonusName], [teamTriple.team2ChosenBonusName], [teamTriple.team3ChosenBonusName]])
       .setHorizontalAlignment('center');
   }

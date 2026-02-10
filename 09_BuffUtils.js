@@ -1,6 +1,14 @@
 /** @OnlyCurrentDoc */
 
-var charsToBuffParams = initCharsToBuffParams();
+var charsToBuffParams;
+
+function getCharsToBuffParams() {
+  if (!charsToBuffParams) {
+    charsToBuffParams = initCharsToBuffParams();
+  }
+  return charsToBuffParams;
+}
+
 // Cache to store compiled functions. 
 // Keys are the formula strings, values are the executable functions.
 const formulaCache = {};
@@ -8,19 +16,21 @@ const formulaCache = {};
 // Initializes all of the params per character (aggregating for the team is done in addBuffParamsToTeam).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
-  const charactersData = charactersDataRange.getValues();
+  const charactersData = getCharactersDataRange().getValues();
+  const cols = getCharactersColumns(); // Use getter
+
   getCharacterNames().forEach((character, row) => {
     row += 1; // Header.
 
     // Initialize early so we can reference within the object initialization.
-    const specialty = charactersData[row][charactersColumns.specialty];
-    const attribute = charactersData[row][charactersColumns.attribute];
-    const assistType = charactersData[row][charactersColumns.assistType];
-    const anomalyBuildup = Number(charactersData[row][charactersColumns.anomalyBuildup]);
-    const fieldTime = Number(charactersData[row][charactersColumns.fieldTime]);
-    const damageFocus = Number(charactersData[row][charactersColumns.damageFocus]);
-    const anomalyDamage = Number(charactersData[row][charactersColumns.anomalyDamage]);
-    const aftershockFocus = Number(charactersData[row][charactersColumns.aftershockFocus]);
+    const specialty = charactersData[row][cols.specialty];
+    const attribute = charactersData[row][cols.attribute];
+    const assistType = charactersData[row][cols.assistType];
+    const anomalyBuildup = Number(charactersData[row][cols.anomalyBuildup]);
+    const fieldTime = Number(charactersData[row][cols.fieldTime]);
+    const damageFocus = Number(charactersData[row][cols.damageFocus]);
+    const anomalyDamage = Number(charactersData[row][cols.anomalyDamage]);
+    const aftershockFocus = Number(charactersData[row][cols.aftershockFocus]);
 
     const buffParams = {
       name : character,
@@ -42,10 +52,10 @@ function initCharsToBuffParams() {
       defensiveAssist : assistType == "Defensive" ? 1 : 0,
       evasiveAssist : assistType == "Evasive" ? 1 : 0,
 
-      tags : String(charactersData[row][charactersColumns.tags]),
+      tags : String(charactersData[row][cols.tags]),
 
       fieldTime : fieldTime,
-      stunBuildup : Number(charactersData[row][charactersColumns.stunBuildup]),
+      stunBuildup : Number(charactersData[row][cols.stunBuildup]),
 
       anomalyBuildup : anomalyBuildup,
       physicalAnomalyBuildup : attribute == "Physical" && character != "Ye Shunguang" ? anomalyBuildup : 0,
@@ -65,14 +75,14 @@ function initCharsToBuffParams() {
       iceDamage : attribute == "Ice" ? damageFocus : 0,
       electricDamage : attribute == "Electric" ? damageFocus : 0,
       sheerDamage : specialty == "Rupture" ? damageFocus : 0,
-      basicAttack : Number(charactersData[row][charactersColumns.basicAttack]),
-      dashAttack : Number(charactersData[row][charactersColumns.dashAttack]),
-      dodgeCounter : Number(charactersData[row][charactersColumns.dodgeCounter]),
-      assistFollowup : Number(charactersData[row][charactersColumns.assistFollowup]),
-      specialAttack : Number(charactersData[row][charactersColumns.specialAttack]),
-      exSpecialAttack : Number(charactersData[row][charactersColumns.exSpecialAttack]),
-      chainAttack : Number(charactersData[row][charactersColumns.chainAttack]),
-      ultimate : Number(charactersData[row][charactersColumns.ultimate]),
+      basicAttack : Number(charactersData[row][cols.basicAttack]),
+      dashAttack : Number(charactersData[row][cols.dashAttack]),
+      dodgeCounter : Number(charactersData[row][cols.dodgeCounter]),
+      assistFollowup : Number(charactersData[row][cols.assistFollowup]),
+      specialAttack : Number(charactersData[row][cols.specialAttack]),
+      exSpecialAttack : Number(charactersData[row][cols.exSpecialAttack]),
+      chainAttack : Number(charactersData[row][cols.chainAttack]),
+      ultimate : Number(charactersData[row][cols.ultimate]),
 
       anomalyDamage : anomalyDamage,
       physicalAnomalyDamage : attribute == "Physical" ? anomalyDamage : 0,
@@ -81,27 +91,27 @@ function initCharsToBuffParams() {
       iceAnomalyDamage : attribute == "Ice" ? anomalyDamage : 0,
       electricAnomalyDamage : attribute == "Electric" ? anomalyDamage : 0,
 
-      shieldFocus : Number(charactersData[row][charactersColumns.shieldFocus]),
-      healingFocus : Number(charactersData[row][charactersColumns.healingFocus]),
-      quickAssistFocus : Number(charactersData[row][charactersColumns.quickAssistFocus]),
+      shieldFocus : Number(charactersData[row][cols.shieldFocus]),
+      healingFocus : Number(charactersData[row][cols.healingFocus]),
+      quickAssistFocus : Number(charactersData[row][cols.quickAssistFocus]),
 
-      chainFocus : Number(charactersData[row][charactersColumns.chainFocus]),
-      chainEnablement : Number(charactersData[row][charactersColumns.chainEnablement]),
+      chainFocus : Number(charactersData[row][cols.chainFocus]),
+      chainEnablement : Number(charactersData[row][cols.chainEnablement]),
       aftershockFocus : aftershockFocus,
       aftershockDamage : aftershockFocus * damageFocus / 2,
-      exSpecialFocus : Number(charactersData[row][charactersColumns.exSpecialFocus]),
-      ultimateFocus : Number(charactersData[row][charactersColumns.ultimateFocus]),
-      ultimateEnablement : Number(charactersData[row][charactersColumns.ultimateEnablement]),
+      exSpecialFocus : Number(charactersData[row][cols.exSpecialFocus]),
+      ultimateFocus : Number(charactersData[row][cols.ultimateFocus]),
+      ultimateEnablement : Number(charactersData[row][cols.ultimateEnablement]),
 
-      hpBenefit : Number(charactersData[row][charactersColumns.hpBenefit]),
-      atkBenefit : Number(charactersData[row][charactersColumns.atkBenefit]),
-      defBenefit : Number(charactersData[row][charactersColumns.defBenefit]),
-      resShredBenefit : Number(charactersData[row][charactersColumns.resShredBenefit]),
-      defShredBenefit : Number(charactersData[row][charactersColumns.defShredBenefit]),
-      impactBenefit : Number(charactersData[row][charactersColumns.impactBenefit]),
-      critRateBenefit : Number(charactersData[row][charactersColumns.critRateBenefit]),
-      critDamageBenefit : Number(charactersData[row][charactersColumns.critDamageBenefit]),
-      energyRegenBenefit : Number(charactersData[row][charactersColumns.energyRegenBenefit]),
+      hpBenefit : Number(charactersData[row][cols.hpBenefit]),
+      atkBenefit : Number(charactersData[row][cols.atkBenefit]),
+      defBenefit : Number(charactersData[row][cols.defBenefit]),
+      resShredBenefit : Number(charactersData[row][cols.resShredBenefit]),
+      defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
+      impactBenefit : Number(charactersData[row][cols.impactBenefit]),
+      critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
+      critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
+      energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
     };
 
     charsToBuffParams.set(character, buffParams);
@@ -111,12 +121,13 @@ function initCharsToBuffParams() {
 
 // Aggregates all of the team params we can reference for buff calculations on the spreadsheet itself.
 function addBuffParamsToTeam(team) {
+  const params = getCharsToBuffParams();
   const char1 = team.characters[0];
   const char2 = team.characters[1];
   const char3 = team.characters[2];
-  const char1Params = charsToBuffParams.get(char1);
-  const char2Params = charsToBuffParams.get(char2);
-  const char3Params = charsToBuffParams.get(char3);
+  const char1Params = params.get(char1);
+  const char2Params = params.get(char2);
+  const char3Params = params.get(char3);
 
   team.NumSupport = char1Params.support + char2Params.support + char3Params.support;
   team.NumStun = char1Params.stun + char2Params.stun + char3Params.stun;
@@ -624,6 +635,7 @@ function getTeamOrCreateSafe(char1, char2, char3) {
  */
 function CALCULATE_BUFFS(charactersAndBuffExpressions) {
   const buffs = [];
+  const teamObjs = getTeamCharsToTeamObjs();
   for (var r = 0; r < charactersAndBuffExpressions.length; r++) {
     var character1 = charactersAndBuffExpressions[r][0];
     if (character1 == null || character1 == "") break;

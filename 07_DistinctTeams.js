@@ -3,6 +3,15 @@
 const distinctTeamsSheetName = "Distinct Teams";
 const recalculateDistinctTeamsCheckbox = "H2";
 
+var _distinctTeamsSheet;
+
+function getDistinctTeamsSheet() {
+  if (!_distinctTeamsSheet) {
+    _distinctTeamsSheet = getSpreadsheet().getSheetByName(distinctTeamsSheetName);
+  }
+  return _distinctTeamsSheet;
+}
+
 // Global variables to store the parsed buff data
 var buffExpressionsList = []; // An array of arrays, e.g., [ [slot1 buffs], [slot2 buffs] ]
 var buffOptions = []; // The list of "chosen" buffs
@@ -81,7 +90,7 @@ function initalizeBuffExpressions(buffsRange) {
  * Main function to update the sheet.
  */
 function updateDistinctTeamsSheet() {
-  const distinctTeamsSheet = thisSpreadsheet.getSheetByName(distinctTeamsSheetName);
+  const distinctTeamsSheet = getDistinctTeamsSheet();
   const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
   const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
 

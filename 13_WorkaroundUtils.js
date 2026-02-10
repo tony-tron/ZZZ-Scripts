@@ -1,24 +1,82 @@
 /** @OnlyCurrentDoc */
 
-const readmeSheet = thisSpreadsheet.getSheetByName("README");
-const latestVersionRange = readmeSheet.getRange("C1");
-const extraSynergySheet = thisSpreadsheet.getSheetByName("Extra Synergy");
-const extraSynergyRange = extraSynergySheet.getRange("A1");
-const sumSynergySheet = thisSpreadsheet.getSheetByName("Sum 2: Synergy");
-const synergyBonusRange = sumSynergySheet.getRange("J2");
-const sumExtraSynergySheet = thisSpreadsheet.getSheetByName("Sum 3: Extra Synergy");
-const extraSynergyBonusRange = sumExtraSynergySheet.getRange("K2");
+// Removed global constants. Fetched dynamically.
+
+var _readmeSheet;
+var _latestVersionRange;
+var _extraSynergySheet;
+var _extraSynergyRange;
+var _sumSynergySheet;
+var _synergyBonusRange;
+var _sumExtraSynergySheet;
+var _extraSynergyBonusRange;
+
+function getReadmeSheet() {
+  if (!_readmeSheet) {
+    _readmeSheet = getSpreadsheet().getSheetByName("README");
+  }
+  return _readmeSheet;
+}
+
+function getLatestVersionRange() {
+  if (!_latestVersionRange) {
+    _latestVersionRange = getReadmeSheet().getRange("C1");
+  }
+  return _latestVersionRange;
+}
+
+function getExtraSynergySheet() {
+  if (!_extraSynergySheet) {
+    _extraSynergySheet = getSpreadsheet().getSheetByName("Extra Synergy");
+  }
+  return _extraSynergySheet;
+}
+
+function getExtraSynergyRange() {
+  if (!_extraSynergyRange) {
+    _extraSynergyRange = getExtraSynergySheet().getRange("A1");
+  }
+  return _extraSynergyRange;
+}
+
+function getSumSynergySheet() {
+  if (!_sumSynergySheet) {
+    _sumSynergySheet = getSpreadsheet().getSheetByName("Sum 2: Synergy");
+  }
+  return _sumSynergySheet;
+}
+
+function getSynergyBonusRange() {
+  if (!_synergyBonusRange) {
+    _synergyBonusRange = getSumSynergySheet().getRange("J2");
+  }
+  return _synergyBonusRange;
+}
+
+function getSumExtraSynergySheet() {
+  if (!_sumExtraSynergySheet) {
+    _sumExtraSynergySheet = getSpreadsheet().getSheetByName("Sum 3: Extra Synergy");
+  }
+  return _sumExtraSynergySheet;
+}
+
+function getExtraSynergyBonusRange() {
+  if (!_extraSynergyBonusRange) {
+    _extraSynergyBonusRange = getSumExtraSynergySheet().getRange("K2");
+  }
+  return _extraSynergyBonusRange;
+}
 
 function refreshLatestVersion() {
-  refreshFormulasForRanges([latestVersionRange],
+  refreshFormulasForRanges([getLatestVersionRange()],
   ['=IMPORTRANGE("https://docs.google.com/spreadsheets/d/1PdatbmxA9f1MXNmv4XCn9BUWFl8ZGVi776Px4VzuwV4/edit", "\'Version History\'!A1:B")']);
 }
 
 function refreshAllCustomFormulas(fastRefresh = false) {
   const rangesToRefresh = [
-    extraSynergyRange,
-    synergyBonusRange,
-    extraSynergyBonusRange,
+    getExtraSynergyRange(),
+    getSynergyBonusRange(),
+    getExtraSynergyBonusRange(),
   ];
 
   const formulasInRefreshedRanges = [

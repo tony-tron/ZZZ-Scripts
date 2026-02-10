@@ -5,6 +5,15 @@ const UNBUILT_CHARACTERS_RANGE_NAME = "A2:B";
 const OUTPUT_RANGE_NAME = "D2:G";
 const OUTPUT_CLEAR_FORMAT_RANGE_NAME = "D2:F";
 
+var _whoToBuildSheet;
+
+function getWhoToBuildSheet() {
+  if (!_whoToBuildSheet) {
+    _whoToBuildSheet = getSpreadsheet().getSheetByName(WHO_TO_BUILD_SHEET_NAME);
+  }
+  return _whoToBuildSheet;
+}
+
 /** Returns true if there is an error in the input, meaning we should abort the rest of the script. */
 function checkAndOutputErrors(numCharactersConsidered, whoToBuildSheet, outputRange, outputClearFormatRange) {
   const outputMessageRange = whoToBuildSheet.getRange(outputRange.getRow(), outputRange.getColumn());
@@ -87,7 +96,7 @@ function displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormat
 }
 
 function updateWhoToBuildSheet() {
-  const whoToBuildSheet = thisSpreadsheet.getSheetByName(WHO_TO_BUILD_SHEET_NAME);
+  const whoToBuildSheet = getWhoToBuildSheet();
   const unbuiltCharactersRange = whoToBuildSheet.getRange(UNBUILT_CHARACTERS_RANGE_NAME);
   const unbuiltCharacters = unbuiltCharactersRange.getValues();
   const outputRange = whoToBuildSheet.getRange(OUTPUT_RANGE_NAME);
@@ -123,7 +132,7 @@ function updateWhoToBuildSheet() {
   setCharactersBuilt([charactersToConsider[charactersToConsider.length-1]], [false]);
   displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormatRange);
 
-  sortedTeamsCheckboxesRange.setValues(oldSortedTeamsCheckboxValues);
+  getSortedTeamsCheckboxesRange().setValues(oldSortedTeamsCheckboxValues);
   unbuiltCharactersRange.setValues(unbuiltCharacters);
 }
 
