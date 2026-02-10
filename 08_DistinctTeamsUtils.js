@@ -5,12 +5,10 @@ function getAllTeams(minTeamStrength) {
   var teams = [];
   for (var r = 1; r < data.length; r++) {
     if (!data[r][0]) break;
-    var team = {
-      characters : [data[r][0], data[r][1], data[r][2]],
-      strength : data[r][3],
-    }
+    var team = new Team(data[r][0], data[r][1], data[r][2]);
+    team.strength = data[r][3];
+
     if (team.strength < minTeamStrength) continue;
-    addBuffParamsToTeam(team);
     teams.push(team);
   }
   return teams;

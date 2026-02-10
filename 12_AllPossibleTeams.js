@@ -36,12 +36,14 @@ function initializeAllTeamsAndBuffParams() {
   const _teams = getAllPossibleTeamsSheet().getDataRange().getValues();
 
   for (var r = 0; r < _teams.length; r++) {
-    var team = {
-      characters : [_teams[r][0], _teams[r][1], _teams[r][2]]
-    }
+    var char1 = _teams[r][0];
+    var char2 = _teams[r][1];
+    var char3 = _teams[r][2];
 
-    if (!params.has(team.characters[0])) break;
-    addBuffParamsToTeam(team);
+    if (!params.has(char1)) break;
+
+    var team = new Team(char1, char2, char3);
+
     teamCharsToTeamObjs[team.characters.join("|")] = team;
     for (const property in team) {
       // By convention, we assume all uppercase properties are variables the user can put in their functions.
