@@ -127,8 +127,13 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
       .setVerticalAlignment('middle')
       .setHorizontalAlignment('center');
 
-    for (var i = 0; i < limit; i++) {
-      sheet.getRange(shiyuDefenseFrontier5TeamsRow + i * 4, strengthColIndex, 3, 1).mergeVertically();
+    // Optimization: Batch merge operations to avoid loop overhead
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, strengthColIndex, 3, 1).mergeVertically();
+
+    if (limit > 1) {
+      var templateRange = sheet.getRange(shiyuDefenseFrontier5TeamsRow, strengthColIndex, 4, 1);
+      var targetRange = sheet.getRange(shiyuDefenseFrontier5TeamsRow + 4, strengthColIndex, (limit - 1) * 4, 1);
+      templateRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
     }
   }
 }
