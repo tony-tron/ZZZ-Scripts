@@ -13,12 +13,8 @@ function getSpreadsheet() {
 
 function init() {
   charactersColumns = initCharactersColumns();
-  if (typeof initCharsToBuffParams === 'function') {
-      charsToBuffParams = initCharsToBuffParams();
-  }
-  if (typeof initializeAllTeamsAndBuffParams === 'function') {
-      initializeAllTeamsAndBuffParams();
-  }
+  charsToBuffParams = initCharsToBuffParams();
+  initializeAllTeamsAndBuffParams();
 }
 
 function onOpen() {
