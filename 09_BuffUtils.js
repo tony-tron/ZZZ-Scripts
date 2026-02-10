@@ -121,145 +121,150 @@ function initCharsToBuffParams() {
 }
 
 // Aggregates all of the team params we can reference for buff calculations on the spreadsheet itself.
-function addBuffParamsToTeam(team) {
-  const params = getCharsToBuffParams();
-  const char1 = team.characters[0];
-  const char2 = team.characters[1];
-  const char3 = team.characters[2];
-  const char1Params = params.get(char1);
-  const char2Params = params.get(char2);
-  const char3Params = params.get(char3);
+class Team {
+  constructor(char1, char2, char3) {
+    this.characters = [char1, char2, char3];
+    this.initStats();
+  }
 
-  team.NumSupport = char1Params.support + char2Params.support + char3Params.support;
-  team.NumStun = char1Params.stun + char2Params.stun + char3Params.stun;
-  team.NumAttack = char1Params.attack + char2Params.attack + char3Params.attack;
-  team.NumAnomaly = char1Params.anomaly + char2Params.anomaly + char3Params.anomaly;
-  team.NumDefense = char1Params.defense + char2Params.defense + char3Params.defense;
-  team.NumRupture = char1Params.rupture + char2Params.rupture + char3Params.rupture;
+  initStats() {
+    const paramsMap = getCharsToBuffParams();
+    const p1 = paramsMap.get(this.characters[0]);
+    const p2 = paramsMap.get(this.characters[1]);
+    const p3 = paramsMap.get(this.characters[2]);
 
-  team.NumPhysical = char1Params.physical + char2Params.physical + char3Params.physical;
-  team.NumEther = char1Params.ether + char2Params.ether + char3Params.ether;
-  team.NumFire = char1Params.fire + char2Params.fire + char3Params.fire;
-  team.NumIce = char1Params.ice + char2Params.ice + char3Params.ice;
-  team.NumElectric = char1Params.electric + char2Params.electric + char3Params.electric;
+    if (!p1 || !p2 || !p3) return;
 
-  team.NumDefensiveAssist = char1Params.defensiveAssist + char2Params.defensiveAssist + char3Params.defensiveAssist;
-  team.NumEvasiveAssist = char1Params.evasiveAssist + char2Params.evasiveAssist + char3Params.evasiveAssist;
-  team.Tags = char1Params.tags + char2Params.tags + char3Params.tags; // Concatenating strings.
-  team.FieldTime = char1Params.fieldTime + char2Params.fieldTime + char3Params.fieldTime;
-  team.StunBuildup = char1Params.stunBuildup + char2Params.stunBuildup + char3Params.stunBuildup;
+    this.NumSupport = p1.support + p2.support + p3.support;
+    this.NumStun = p1.stun + p2.stun + p3.stun;
+    this.NumAttack = p1.attack + p2.attack + p3.attack;
+    this.NumAnomaly = p1.anomaly + p2.anomaly + p3.anomaly;
+    this.NumDefense = p1.defense + p2.defense + p3.defense;
+    this.NumRupture = p1.rupture + p2.rupture + p3.rupture;
 
-  team.TotalAnomalyBuildup = char1Params.anomalyBuildup + char2Params.anomalyBuildup + char3Params.anomalyBuildup;
-  team.PhysicalAnomalyBuildup = char1Params.physicalAnomalyBuildup + char2Params.physicalAnomalyBuildup + char3Params.physicalAnomalyBuildup;
-  team.HonedEdgeAnomalyBuildup = char1Params.honedEdgeAnomalyBuildup + char2Params.honedEdgeAnomalyBuildup + char3Params.honedEdgeAnomalyBuildup;
-  team.EtherAnomalyBuildup = char1Params.etherAnomalyBuildup + char2Params.etherAnomalyBuildup + char3Params.etherAnomalyBuildup;
-  team.FireAnomalyBuildup = char1Params.fireAnomalyBuildup + char2Params.fireAnomalyBuildup + char3Params.fireAnomalyBuildup;
-  team.IceAnomalyBuildup = char1Params.iceAnomalyBuildup + char2Params.iceAnomalyBuildup + char3Params.iceAnomalyBuildup;
-  team.FrostAnomalyBuildup = char1Params.frostAnomalyBuildup + char2Params.frostAnomalyBuildup + char3Params.frostAnomalyBuildup;
-  team.ElectricAnomalyBuildup = char1Params.electricAnomalyBuildup + char2Params.electricAnomalyBuildup + char3Params.electricAnomalyBuildup;
+    this.NumPhysical = p1.physical + p2.physical + p3.physical;
+    this.NumEther = p1.ether + p2.ether + p3.ether;
+    this.NumFire = p1.fire + p2.fire + p3.fire;
+    this.NumIce = p1.ice + p2.ice + p3.ice;
+    this.NumElectric = p1.electric + p2.electric + p3.electric;
 
-  team.OffFieldDamage = char1Params.offFieldDamage + char2Params.offFieldDamage + char3Params.offFieldDamage;
-  team.OnFieldDamage = char1Params.onFieldDamage + char2Params.onFieldDamage + char3Params.onFieldDamage;
+    this.NumDefensiveAssist = p1.defensiveAssist + p2.defensiveAssist + p3.defensiveAssist;
+    this.NumEvasiveAssist = p1.evasiveAssist + p2.evasiveAssist + p3.evasiveAssist;
+    this.Tags = p1.tags + p2.tags + p3.tags;
+    this.FieldTime = p1.fieldTime + p2.fieldTime + p3.fieldTime;
+    this.StunBuildup = p1.stunBuildup + p2.stunBuildup + p3.stunBuildup;
 
-  team.TotalDamageFocus = char1Params.damageFocus + char2Params.damageFocus + char3Params.damageFocus;
-  team.PhysicalDamage = char1Params.physicalDamage + char2Params.physicalDamage + char3Params.physicalDamage;
-  team.EtherDamage = char1Params.etherDamage + char2Params.etherDamage + char3Params.etherDamage;
-  team.FireDamage = char1Params.fireDamage + char2Params.fireDamage + char3Params.fireDamage;
-  team.IceDamage = char1Params.iceDamage + char2Params.iceDamage + char3Params.iceDamage;
-  team.ElectricDamage = char1Params.electricDamage + char2Params.electricDamage + char3Params.electricDamage;
-  team.SheerDamage = char1Params.sheerDamage + char2Params.sheerDamage + char3Params.sheerDamage;
-  team.BasicAttackDamage = char1Params.basicAttack + char2Params.basicAttack + char3Params.basicAttack;
-  team.DashAttackDamage = char1Params.dashAttack + char2Params.dashAttack + char3Params.dashAttack;
-  team.DodgeCounterDamage = char1Params.dodgeCounter + char2Params.dodgeCounter + char3Params.dodgeCounter;
-  team.AssistFollowupDamage = char1Params.assistFollowup + char2Params.assistFollowup + char3Params.assistFollowup;
-  team.SpecialAttackDamage = char1Params.specialAttack + char2Params.specialAttack + char3Params.specialAttack;
-  team.EXSpecialAttackDamage = char1Params.exSpecialAttack + char2Params.exSpecialAttack + char3Params.exSpecialAttack;
-  team.ChainDamage = char1Params.chainAttack + char2Params.chainAttack + char3Params.chainAttack;
-  team.UltimateDamage = char1Params.ultimate + char2Params.ultimate + char3Params.ultimate;
+    this.TotalAnomalyBuildup = p1.anomalyBuildup + p2.anomalyBuildup + p3.anomalyBuildup;
+    this.PhysicalAnomalyBuildup = p1.physicalAnomalyBuildup + p2.physicalAnomalyBuildup + p3.physicalAnomalyBuildup;
+    this.HonedEdgeAnomalyBuildup = p1.honedEdgeAnomalyBuildup + p2.honedEdgeAnomalyBuildup + p3.honedEdgeAnomalyBuildup;
+    this.EtherAnomalyBuildup = p1.etherAnomalyBuildup + p2.etherAnomalyBuildup + p3.etherAnomalyBuildup;
+    this.FireAnomalyBuildup = p1.fireAnomalyBuildup + p2.fireAnomalyBuildup + p3.fireAnomalyBuildup;
+    this.IceAnomalyBuildup = p1.iceAnomalyBuildup + p2.iceAnomalyBuildup + p3.iceAnomalyBuildup;
+    this.FrostAnomalyBuildup = p1.frostAnomalyBuildup + p2.frostAnomalyBuildup + p3.frostAnomalyBuildup;
+    this.ElectricAnomalyBuildup = p1.electricAnomalyBuildup + p2.electricAnomalyBuildup + p3.electricAnomalyBuildup;
 
-  _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params);
-  _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Params, char3Params);
+    this.OffFieldDamage = p1.offFieldDamage + p2.offFieldDamage + p3.offFieldDamage;
+    this.OnFieldDamage = p1.onFieldDamage + p2.onFieldDamage + p3.onFieldDamage;
 
-  const physicalAnomaly = team.PhysicalAnomalyBuildup >= 2 ? team.PhysicalAnomalyBuildup : 0;
-  const honedEdgeAnomaly = team.HonedEdgeAnomalyBuildup >= 2 ? team.HonedEdgeAnomalyBuildup : 0;
-  const etherAnomaly = team.EtherAnomalyBuildup >= 2 ? team.EtherAnomalyBuildup : 0;
-  const fireAnomaly = team.FireAnomalyBuildup >= 2 ? team.FireAnomalyBuildup : 0;
-  const iceAnomaly = team.IceAnomalyBuildup >= 2 ? team.IceAnomalyBuildup : 0;
-  const frostAnomaly = team.FrostAnomalyBuildup >= 2 ? team.FrostAnomalyBuildup : 0;
-  const electricAnomaly = team.ElectricAnomalyBuildup >= 2 ? team.ElectricAnomalyBuildup : 0;
-  const totalAnomaly =
-      physicalAnomaly
-    + honedEdgeAnomaly
-    + etherAnomaly
-    + fireAnomaly
-    + iceAnomaly
-    + frostAnomaly
-    + electricAnomaly;
-  team.HasAttributeAnomaly = totalAnomaly > 0;
-  team.AnomalyBuffUptime = function(uptimeSeconds) {
-    with (this) {
-      return Math.min(1, totalAnomaly * uptimeSeconds / 60);
-    }
-  };
-  team.DisorderFocus =
-      ((team.PhysicalAnomalyBuildup >= 2 ? team.PhysicalAnomalyBuildup : 0)
-    + (team.HonedEdgeAnomalyBuildup >= 2 ? team.HonedEdgeAnomalyBuildup : 0)
-    + (team.EtherAnomalyBuildup >= 2 ? team.EtherAnomalyBuildup : 0)
-    + (team.FireAnomalyBuildup >= 2 ? team.FireAnomalyBuildup : 0)
-    + (team.IceAnomalyBuildup >= 2 ? team.IceAnomalyBuildup : 0)
-    + (team.FrostAnomalyBuildup >= 2 ? team.FrostAnomalyBuildup : 0)
-    + (team.ElectricAnomalyBuildup >= 2 ? team.ElectricAnomalyBuildup : 0))
-    / 4;
-  if (team.DisorderFocus < 1) team.DisorderFocus = 0;
+    this.TotalDamageFocus = p1.damageFocus + p2.damageFocus + p3.damageFocus;
+    this.PhysicalDamage = p1.physicalDamage + p2.physicalDamage + p3.physicalDamage;
+    this.EtherDamage = p1.etherDamage + p2.etherDamage + p3.etherDamage;
+    this.FireDamage = p1.fireDamage + p2.fireDamage + p3.fireDamage;
+    this.IceDamage = p1.iceDamage + p2.iceDamage + p3.iceDamage;
+    this.ElectricDamage = p1.electricDamage + p2.electricDamage + p3.electricDamage;
+    this.SheerDamage = p1.sheerDamage + p2.sheerDamage + p3.sheerDamage;
+    this.BasicAttackDamage = p1.basicAttack + p2.basicAttack + p3.basicAttack;
+    this.DashAttackDamage = p1.dashAttack + p2.dashAttack + p3.dashAttack;
+    this.DodgeCounterDamage = p1.dodgeCounter + p2.dodgeCounter + p3.dodgeCounter;
+    this.AssistFollowupDamage = p1.assistFollowup + p2.assistFollowup + p3.assistFollowup;
+    this.SpecialAttackDamage = p1.specialAttack + p2.specialAttack + p3.specialAttack;
+    this.EXSpecialAttackDamage = p1.exSpecialAttack + p2.exSpecialAttack + p3.exSpecialAttack;
+    this.ChainDamage = p1.chainAttack + p2.chainAttack + p3.chainAttack;
+    this.UltimateDamage = p1.ultimate + p2.ultimate + p3.ultimate;
 
-  team.TotalAnomalyDamage = char1Params.anomalyDamage + char2Params.anomalyDamage + char3Params.anomalyDamage;
-  team.PhysicalAnomalyDamage = char1Params.physicalAnomalyDamage + char2Params.physicalAnomalyDamage + char3Params.physicalAnomalyDamage;
-  team.EtherAnomalyDamage = char1Params.etherAnomalyDamage + char2Params.etherAnomalyDamage + char3Params.etherAnomalyDamage;
-  team.FireAnomalyDamage = char1Params.fireAnomalyDamage + char2Params.fireAnomalyDamage + char3Params.fireAnomalyDamage;
-  team.IceAnomalyDamage = char1Params.iceAnomalyDamage + char2Params.iceAnomalyDamage + char3Params.iceAnomalyDamage;
-  team.ElectricAnomalyDamage = char1Params.electricAnomalyDamage + char2Params.electricAnomalyDamage + char3Params.electricAnomalyDamage;
+    _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
+    _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
 
-  team.ShieldFocus = char1Params.shieldFocus + char2Params.shieldFocus + char3Params.shieldFocus;
-  team.HealingFocus = char1Params.healingFocus + char2Params.healingFocus + char3Params.healingFocus;
-  team.QuickAssistFocus = Math.abs(char1Params.quickAssistFocus) + Math.abs(char2Params.quickAssistFocus) + Math.abs(char3Params.quickAssistFocus);
-  team.ForwardAssistFocus = Math.max(0, char1Params.quickAssistFocus) + Math.max(0, char2Params.quickAssistFocus) + Math.max(0, char3Params.quickAssistFocus);
-  team.BackwardAssistFocus = Math.abs(Math.min(0, char1Params.quickAssistFocus) + Math.min(0, char2Params.quickAssistFocus) + Math.min(0, char3Params.quickAssistFocus));
+    const physicalAnomaly = this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0;
+    const honedEdgeAnomaly = this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0;
+    const etherAnomaly = this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0;
+    const fireAnomaly = this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0;
+    const iceAnomaly = this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0;
+    const frostAnomaly = this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0;
+    const electricAnomaly = this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0;
+    const totalAnomaly =
+        physicalAnomaly
+      + honedEdgeAnomaly
+      + etherAnomaly
+      + fireAnomaly
+      + iceAnomaly
+      + frostAnomaly
+      + electricAnomaly;
 
-  team.ChainFocus = char1Params.chainFocus + char2Params.chainFocus + char3Params.chainFocus;
-  team.ChainEnablement = char1Params.chainEnablement + char2Params.chainEnablement + char3Params.chainEnablement;
-  team.AftershockFocus = char1Params.aftershockFocus + char2Params.aftershockFocus + char3Params.aftershockFocus;
-  team.EXSpecialFocus = char1Params.exSpecialFocus + char2Params.exSpecialFocus + char3Params.exSpecialFocus;
-  team.HasAftershock = team.AftershockFocus > 0;
-  team.AftershockDamage = char1Params.aftershockDamage + char2Params.aftershockDamage + char3Params.aftershockDamage;
-  team.UltimateFocus = char1Params.ultimateFocus + char2Params.ultimateFocus + char3Params.ultimateFocus;
-  team.UltimateEnablement = char1Params.ultimateEnablement + char2Params.ultimateEnablement + char3Params.ultimateEnablement;
-  team.EXSpecialBuffUptime = function(uptimeSeconds) {
-    with (this) {
-      return Math.min(1, EXSpecialFocus * uptimeSeconds / 10);
-    }
-  };
-  team.UltimateBuffUptime = function(uptimeSeconds) {
-    with (this) {
-      return Math.min(1, UltimateFocus * uptimeSeconds / 60);
-    }
-  };
+    this.HasAttributeAnomaly = totalAnomaly > 0;
+    this.totalAnomaly = totalAnomaly;
 
-  team.HPBenefit = char1Params.hpBenefit + char2Params.hpBenefit + char3Params.hpBenefit;
-  team.AttackBenefit = char1Params.atkBenefit + char2Params.atkBenefit + char3Params.atkBenefit;
-  team.DefenseBenefit = char1Params.defBenefit + char2Params.defBenefit + char3Params.defBenefit;
-  team.ResistanceShredBenefit = char1Params.resShredBenefit + char2Params.resShredBenefit + char3Params.resShredBenefit;
-  team.DefenseShredBenefit = char1Params.defShredBenefit + char2Params.defShredBenefit + char3Params.defShredBenefit;
-  team.ImpactBenefit = char1Params.impactBenefit + char2Params.impactBenefit + char3Params.impactBenefit;
-  team.CritRateBenefit = char1Params.critRateBenefit + char2Params.critRateBenefit + char3Params.critRateBenefit;
-  team.CritDamageBenefit = char1Params.critDamageBenefit + char2Params.critDamageBenefit + char3Params.critDamageBenefit;
-  team.EnergyRegenBenefit = char1Params.energyRegenBenefit + char2Params.energyRegenBenefit + char3Params.energyRegenBenefit;
+    this.DisorderFocus =
+        ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
+      + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
+      + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
+      + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
+      + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
+      + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
+      + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
+      / 4;
+    if (this.DisorderFocus < 1) this.DisorderFocus = 0;
 
-  team.StunDamageMultiplier = function(multiplier) {
+    this.TotalAnomalyDamage = p1.anomalyDamage + p2.anomalyDamage + p3.anomalyDamage;
+    this.PhysicalAnomalyDamage = p1.physicalAnomalyDamage + p2.physicalAnomalyDamage + p3.physicalAnomalyDamage;
+    this.EtherAnomalyDamage = p1.etherAnomalyDamage + p2.etherAnomalyDamage + p3.etherAnomalyDamage;
+    this.FireAnomalyDamage = p1.fireAnomalyDamage + p2.fireAnomalyDamage + p3.fireAnomalyDamage;
+    this.IceAnomalyDamage = p1.iceAnomalyDamage + p2.iceAnomalyDamage + p3.iceAnomalyDamage;
+    this.ElectricAnomalyDamage = p1.electricAnomalyDamage + p2.electricAnomalyDamage + p3.electricAnomalyDamage;
+
+    this.ShieldFocus = p1.shieldFocus + p2.shieldFocus + p3.shieldFocus;
+    this.HealingFocus = p1.healingFocus + p2.healingFocus + p3.healingFocus;
+    this.QuickAssistFocus = Math.abs(p1.quickAssistFocus) + Math.abs(p2.quickAssistFocus) + Math.abs(p3.quickAssistFocus);
+    this.ForwardAssistFocus = Math.max(0, p1.quickAssistFocus) + Math.max(0, p2.quickAssistFocus) + Math.max(0, p3.quickAssistFocus);
+    this.BackwardAssistFocus = Math.abs(Math.min(0, p1.quickAssistFocus) + Math.min(0, p2.quickAssistFocus) + Math.min(0, p3.quickAssistFocus));
+
+    this.ChainFocus = p1.chainFocus + p2.chainFocus + p3.chainFocus;
+    this.ChainEnablement = p1.chainEnablement + p2.chainEnablement + p3.chainEnablement;
+    this.AftershockFocus = p1.aftershockFocus + p2.aftershockFocus + p3.aftershockFocus;
+    this.EXSpecialFocus = p1.exSpecialFocus + p2.exSpecialFocus + p3.exSpecialFocus;
+    this.HasAftershock = this.AftershockFocus > 0;
+    this.AftershockDamage = p1.aftershockDamage + p2.aftershockDamage + p3.aftershockDamage;
+    this.UltimateFocus = p1.ultimateFocus + p2.ultimateFocus + p3.ultimateFocus;
+    this.UltimateEnablement = p1.ultimateEnablement + p2.ultimateEnablement + p3.ultimateEnablement;
+
+    this.HPBenefit = p1.hpBenefit + p2.hpBenefit + p3.hpBenefit;
+    this.AttackBenefit = p1.atkBenefit + p2.atkBenefit + p3.atkBenefit;
+    this.DefenseBenefit = p1.defBenefit + p2.defBenefit + p3.defBenefit;
+    this.ResistanceShredBenefit = p1.resShredBenefit + p2.resShredBenefit + p3.resShredBenefit;
+    this.DefenseShredBenefit = p1.defShredBenefit + p2.defShredBenefit + p3.defShredBenefit;
+    this.ImpactBenefit = p1.impactBenefit + p2.impactBenefit + p3.impactBenefit;
+    this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
+    this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
+    this.EnergyRegenBenefit = p1.energyRegenBenefit + p2.energyRegenBenefit + p3.energyRegenBenefit;
+  }
+
+  AnomalyBuffUptime(uptimeSeconds) {
+    return Math.min(1, (this.totalAnomaly || 0) * uptimeSeconds / 60);
+  }
+
+  EXSpecialBuffUptime(uptimeSeconds) {
+      return Math.min(1, this.EXSpecialFocus * uptimeSeconds / 10);
+  }
+
+  UltimateBuffUptime(uptimeSeconds) {
+      return Math.min(1, this.UltimateFocus * uptimeSeconds / 60);
+  }
+
+  StunDamageMultiplier(multiplier) {
     return this.PerChar('(name=="Ye Shunguang" ? 1 : ' + (this.StunBuildup*0.1) + ') * damageFocus * ' + multiplier);
   }
 
-  team.PerChar = function(calcExpression) {
-    // Handle empty/null expressions gracefully
+  PerChar(calcExpression) {
     if (!calcExpression) return 0;
 
     if (!formulaCache[calcExpression]) {
@@ -267,34 +272,42 @@ function addBuffParamsToTeam(team) {
     }
 
     const fn = formulaCache[calcExpression];
-    return fn(char1Params) + fn(char2Params) + fn(char3Params);
+    const params = getCharsToBuffParams();
+    const p1 = params.get(this.characters[0]);
+    const p2 = params.get(this.characters[1]);
+    const p3 = params.get(this.characters[2]);
+
+    return fn(p1) + fn(p2) + fn(p3);
   }
 
-  team.Buff = function(attributes) {
+  Buff(attributes) {
     if (!attributes) return 0;
     
     var total = 0;
     
-    // Helper to calculate for one character
-    function addForChar(params) {
-      if (attributes.toLowerCase().includes(params.attribute.toLowerCase())) {
-        total += params.damageFocus*0.2 + params.stunBuildup*0.2 + params.anomalyBuildup*0.2;
+    const params = getCharsToBuffParams();
+    const p1 = params.get(this.characters[0]);
+    const p2 = params.get(this.characters[1]);
+    const p3 = params.get(this.characters[2]);
+
+    function addForChar(p) {
+      if (attributes.toLowerCase().includes(p.attribute.toLowerCase())) {
+        total += p.damageFocus*0.2 + p.stunBuildup*0.2 + p.anomalyBuildup*0.2;
       }
     }
 
-    addForChar(char1Params);
-    addForChar(char2Params);
-    addForChar(char3Params);
+    addForChar(p1);
+    addForChar(p2);
+    addForChar(p3);
 
     return total;
-  };
+  }
 
-  team.Nerf = function(attributes) {
+  Nerf(attributes) {
     return -this.Buff(attributes);
-  };
+  }
 
-  team.calculateBuff = function(calcExpression) {
-    // Handle empty/null expressions gracefully
+  calculateBuff(calcExpression) {
     if (!calcExpression) return 0;
 
     if (!formulaCache[calcExpression]) {
@@ -302,7 +315,7 @@ function addBuffParamsToTeam(team) {
     }
 
     return formulaCache[calcExpression](this);
-  };
+  }
 }
 
 function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params, char3Params) {
@@ -636,10 +649,8 @@ function getTeamOrCreateSafe(char1, char2, char3) {
       params.has(char2) &&
       params.has(char3)) {
 
-     const team = {
-       characters: [char1, char2, char3]
-     };
-     addBuffParamsToTeam(team);
+     // Create new Class Instance
+     const team = new Team(char1, char2, char3);
 
      // Cache it if the global map is available
      if (typeof teamCharsToTeamObjs !== 'undefined') {
