@@ -584,6 +584,39 @@ function getAllPermutations(arr) {
 }
 
 /**
+ * Helper to safely retrieve or construct a team object.
+ * @param {string} char1
+ * @param {string} char2
+ * @param {string} char3
+ * @returns {object|null} The team object or null if invalid.
+ */
+function getTeamOrCreateSafe(char1, char2, char3) {
+  const key = [char1, char2, char3].join("|");
+  if (typeof teamCharsToTeamObjs !== 'undefined' && teamCharsToTeamObjs[key]) {
+    return teamCharsToTeamObjs[key];
+  }
+
+  // Verify characters exist.
+  // Note: char2/char3 might be empty strings if not provided, but addBuffParamsToTeam requires valid params.
+  if (charsToBuffParams.has(char1) &&
+      charsToBuffParams.has(char2) &&
+      charsToBuffParams.has(char3)) {
+
+     const team = {
+       characters: [char1, char2, char3]
+     };
+     addBuffParamsToTeam(team);
+
+     // Cache it if the global map is available
+     if (typeof teamCharsToTeamObjs !== 'undefined') {
+       teamCharsToTeamObjs[key] = team;
+     }
+     return team;
+  }
+  return null;
+}
+
+/**
  * Evaluates the javascript buff function based on the columns:
  * Character1 Character2 Character3 buffFunction
  * 
@@ -597,10 +630,17 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
     var character2 = charactersAndBuffExpressions[r][1];
     var character3 = charactersAndBuffExpressions[r][2];
     var buffExpression = charactersAndBuffExpressions[r][3];
-    var buff = teamCharsToTeamObjs[[character1, character2, character3].join("|")].calculateBuff(buffExpression);
-    // Round to the nearest 0.25.
-    buff = Math.round(buff * 4) / 4;
-    buffs.push([buff]);
+
+    const team = getTeamOrCreateSafe(character1, character2, character3);
+
+    if (team) {
+      var buff = team.calculateBuff(buffExpression);
+      // Round to the nearest 0.25.
+      buff = Math.round(buff * 4) / 4;
+      buffs.push([buff]);
+    } else {
+      buffs.push([0]);
+    }
   }
   return buffs;
 }
@@ -613,9 +653,6 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
 function CALCULATE_SYNERGY_BUFFS(data) {
   const results = [];
   
-  // Create a local reference to the global object to ensure scope access within the loop
-  const lookupMap = teamCharsToTeamObjs; 
-
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const char1 = row[0];
@@ -627,10 +664,12 @@ function CALCULATE_SYNERGY_BUFFS(data) {
     const char2 = row[1];
     const char3 = row[2];
 
-    // Optimization: Construct the key once per row instead of 3 times.
-    // Template literals are generally faster/cleaner than array joins for fixed sizes.
-    const key = `${char1}|${char2}|${char3}`;
-    const teamObj = lookupMap[key];
+    const teamObj = getTeamOrCreateSafe(char1, char2, char3);
+
+    if (!teamObj) {
+      results.push([0]);
+      continue;
+    }
 
     let totalBuff = 0;
 
