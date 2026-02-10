@@ -453,6 +453,153 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   team.NumElectric *= 1.5;
 }
 
+const IGNORED_IDENTIFIERS = new Set([
+  "Math", "Number", "String", "Object", "Array", "Date", "RegExp", "JSON",
+  "parseInt", "parseFloat", "isNaN", "isFinite", "encodeURI", "decodeURI",
+  "true", "false", "null", "undefined", "NaN", "Infinity",
+  "if", "else", "return", "var", "let", "const", "function", "new", "this",
+  "typeof", "instanceof", "in", "void", "delete", "switch", "case", "break",
+  "default", "try", "catch", "throw", "finally", "with", "do", "while", "for",
+  "continue", "debugger", "arguments"
+]);
+
+function isIdentifierStart(char) {
+  return /[a-zA-Z_$]/.test(char);
+}
+
+function isIdentifierPart(char) {
+  return /[a-zA-Z0-9_$]/.test(char);
+}
+
+function rewriteBuffFormula(expression) {
+  let result = "";
+  let i = 0;
+  let lastTokenWasDot = false;
+
+  while (i < expression.length) {
+    const char = expression[i];
+
+    // Handle Whitespace
+    if (/\s/.test(char)) {
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Handle String Literals
+    if (char === '"' || char === "'") {
+      const quote = char;
+      result += quote;
+      i++;
+      while (i < expression.length) {
+        const c = expression[i];
+        result += c;
+        i++;
+        if (c === quote) {
+          let backslashCount = 0;
+          let j = i - 2;
+          while (j >= 0 && expression[j] === '\\') {
+            backslashCount++;
+            j--;
+          }
+          if (backslashCount % 2 === 0) {
+            break;
+          }
+        }
+      }
+      lastTokenWasDot = false;
+      continue;
+    }
+
+    // Handle Numeric Literals
+    const isDigit = /\d/.test(char);
+    const isDot = char === '.';
+    const nextCharIsDigit = (i + 1 < expression.length) && /\d/.test(expression[i+1]);
+
+    if (isDigit || (isDot && nextCharIsDigit)) {
+      // Consume number
+      if (char === '0' && (i + 1 < expression.length) && (expression[i+1] === 'x' || expression[i+1] === 'X')) {
+        result += char; // 0
+        i++;
+        result += expression[i]; // x
+        i++;
+        while (i < expression.length && /[0-9a-fA-F]/.test(expression[i])) {
+          result += expression[i];
+          i++;
+        }
+      } else {
+        let hasDot = isDot;
+        result += char;
+        i++;
+
+        while (i < expression.length) {
+          const c = expression[i];
+          if (/\d/.test(c)) {
+            result += c;
+            i++;
+          } else if (c === '.' && !hasDot) {
+            hasDot = true;
+            result += c;
+            i++;
+          } else if ((c === 'e' || c === 'E') && (i+1 < expression.length)) {
+             let next = expression[i+1];
+             if (/\d/.test(next) || next === '+' || next === '-') {
+               result += c; // e
+               i++;
+               if (next === '+' || next === '-') {
+                 result += expression[i]; // sign
+                 i++;
+               }
+               while (i < expression.length && /\d/.test(expression[i])) {
+                 result += expression[i];
+                 i++;
+               }
+             } else {
+               break;
+             }
+          } else {
+            break;
+          }
+        }
+      }
+      lastTokenWasDot = false;
+      continue;
+    }
+
+    // Handle Dot Operator
+    if (char === '.') {
+      result += char;
+      lastTokenWasDot = true;
+      i++;
+      continue;
+    }
+
+    // Handle Identifier
+    if (isIdentifierStart(char)) {
+      let id = "";
+      while (i < expression.length && isIdentifierPart(expression[i])) {
+        id += expression[i];
+        i++;
+      }
+
+      if (!lastTokenWasDot && !IGNORED_IDENTIFIERS.has(id)) {
+        result += "ctx." + id;
+      } else {
+        result += id;
+      }
+      lastTokenWasDot = false;
+      continue;
+    }
+
+    // Other chars
+    result += char;
+    lastTokenWasDot = false;
+    i++;
+  }
+
+  return result;
+}
+
 /**
  * Compiles a formula string into an executable function.
  * @param {string} expression The formula string (e.g., "1 + damageFocus * 0.5").
@@ -467,7 +614,8 @@ function compileBuffFunction(expression) {
   // Create a function that takes 'ctx' (context/team) and executes the math
   // We use "Number()" to ensure the result is always a valid number.
   try {
-    return new Function("ctx", "with(ctx) { return Number(" + expression + "); }");
+    const rewritten = rewriteBuffFormula(expression);
+    return new Function("ctx", "return Number(" + rewritten + ");");
   } catch (e) {
     console.error("Failed to compile formula: " + expression, e);
     return function() { return 0; };
