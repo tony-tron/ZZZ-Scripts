@@ -107,8 +107,13 @@ function updateShiyuDefenseFrontier4DistinctTeamsSheet(teamPairs, sheet, startRo
     sheet.getRange(startRow, startColumn, count * 3, 4).setValues(outputValues);
     sheet.getRange(startRow, startColumn + 3, count * 3, 1).setVerticalAlignment('middle').setHorizontalAlignment('center');
 
-    for (var i = 0; i < count; i++) {
-      sheet.getRange(startRow + i * 3, startColumn + 3, 2, 1).mergeVertically();
+    // Optimization: Batch merge operations to avoid loop overhead
+    sheet.getRange(startRow, startColumn + 3, 2, 1).mergeVertically();
+
+    if (count > 1) {
+      var templateRange = sheet.getRange(startRow, startColumn + 3, 3, 1);
+      var targetRange = sheet.getRange(startRow + 3, startColumn + 3, (count - 1) * 3, 1);
+      templateRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
     }
   }
 }
