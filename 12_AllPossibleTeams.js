@@ -30,15 +30,8 @@ function initializeAllTeamsAndBuffParams() {
   teamCharsToTeamObjs = {};
   supportedTeamPropertiesToCalcs = {};
 
-  // Ensure charsToBuffParams is initialized
-  var params;
-  if (typeof getCharsToBuffParams === 'function') {
-      params = getCharsToBuffParams();
-  } else if (typeof initCharsToBuffParams === 'function') {
-      // Fallback
-      if (!charsToBuffParams) charsToBuffParams = initCharsToBuffParams();
-      params = charsToBuffParams;
-  }
+  // Directly use the getter from 09_BuffUtils.js
+  const params = getCharsToBuffParams();
 
   const _teams = getAllPossibleTeamsSheet().getDataRange().getValues();
 
@@ -46,7 +39,7 @@ function initializeAllTeamsAndBuffParams() {
     var team = {
       characters : [_teams[r][0], _teams[r][1], _teams[r][2]]
     }
-    // Using local params reference
+
     if (!params.has(team.characters[0])) continue;
     addBuffParamsToTeam(team);
     teamCharsToTeamObjs[team.characters.join("|")] = team;
@@ -118,9 +111,5 @@ function SUPPORTED_TEAM_PROPERTIES() {
  * @customfunction
  */
 function SUPPORTED_CHAR_PROPERTIES() {
-  if (typeof getCharsToBuffParams === 'function') {
-      return Object.keys(getCharsToBuffParams().get('Anby'));
-  }
-  // Fallback if not refactored yet
-  return Object.keys(charsToBuffParams.get('Anby'));
+  return Object.keys(getCharsToBuffParams().get('Anby'));
 }
