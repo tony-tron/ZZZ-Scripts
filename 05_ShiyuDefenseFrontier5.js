@@ -12,7 +12,7 @@ var shiyuDefenseFrontier5Team2BuffExpressions = [];
 var shiyuDefenseFrontier5Team3BuffExpressions = [];
 
 function getShiyuDefenseFrontier5Sheet() {
-  return thisSpreadsheet.getSheetByName(shiyuDefenseFrontier5SheetName);
+  return getSpreadsheet().getSheetByName(shiyuDefenseFrontier5SheetName);
 }
 
 function initalizeShiyuDefenseFrontier5BuffExpressions() {

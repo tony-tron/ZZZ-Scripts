@@ -87,7 +87,7 @@ function displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormat
 }
 
 function updateWhoToBuildSheet() {
-  const whoToBuildSheet = thisSpreadsheet.getSheetByName(WHO_TO_BUILD_SHEET_NAME);
+  const whoToBuildSheet = getSpreadsheet().getSheetByName(WHO_TO_BUILD_SHEET_NAME);
   const unbuiltCharactersRange = whoToBuildSheet.getRange(UNBUILT_CHARACTERS_RANGE_NAME);
   const unbuiltCharacters = unbuiltCharactersRange.getValues();
   const outputRange = whoToBuildSheet.getRange(OUTPUT_RANGE_NAME);

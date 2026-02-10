@@ -1,17 +1,44 @@
 /** @OnlyCurrentDoc */
 
-const allPossibleTeamsSheet = thisSpreadsheet.getSheetByName("All Possible Teams");
-const _teams = allPossibleTeamsSheet.getDataRange().getValues();
-var teamCharsToTeamObjs = {};
-var supportedTeamPropertiesToCalcs = {};
-initializeAllTeamsAndBuffParams();
+var teamCharsToTeamObjs;
+var supportedTeamPropertiesToCalcs;
+
+function getAllPossibleTeamsSheet() {
+  return getSpreadsheet().getSheetByName("All Possible Teams");
+}
+
+function getTeamCharsToTeamObjs() {
+  if (!teamCharsToTeamObjs) {
+    initializeAllTeamsAndBuffParams();
+  }
+  return teamCharsToTeamObjs;
+}
+
+function getSupportedTeamPropertiesToCalcs() {
+  if (!supportedTeamPropertiesToCalcs) {
+    initializeAllTeamsAndBuffParams();
+  }
+  return supportedTeamPropertiesToCalcs;
+}
 
 function initializeAllTeamsAndBuffParams() {
   teamCharsToTeamObjs = {};
+  supportedTeamPropertiesToCalcs = {};
+
+  // Ensure charsToBuffParams is initialized
+  if (typeof getCharsToBuffParams === 'function') {
+      getCharsToBuffParams();
+  } else if (!charsToBuffParams && typeof initCharsToBuffParams === 'function') {
+      charsToBuffParams = initCharsToBuffParams();
+  }
+
+  const _teams = getAllPossibleTeamsSheet().getDataRange().getValues();
+
   for (var r = 0; r < _teams.length; r++) {
     var team = {
       characters : [_teams[r][0], _teams[r][1], _teams[r][2]]
     }
+    // Using global charsToBuffParams - assuming it is populated
     if (!charsToBuffParams.has(team.characters[0])) continue;
     addBuffParamsToTeam(team);
     teamCharsToTeamObjs[team.characters.join("|")] = team;
@@ -37,9 +64,10 @@ function initializeAllTeamsAndBuffParams() {
  * @customfunction
  */
 function SUPPORTED_TEAM_PROPERTIES() {
+  const props = getSupportedTeamPropertiesToCalcs();
   const properties = [];
   var calcs;
-  for (const property in supportedTeamPropertiesToCalcs) {
+  for (const property in props) {
     if (property === "Tags") {
       properties.push([property, "String"]);
       continue;
@@ -68,7 +96,7 @@ function SUPPORTED_TEAM_PROPERTIES() {
       properties.push([property, "Parameter: attributes"]);
       continue;
     }
-    calcs = supportedTeamPropertiesToCalcs[property].sort((a, b) => a - b);
+    calcs = props[property].sort((a, b) => a - b);
     properties.push([property, calcs[0] + " to " + calcs[calcs.length - 1] + ", median=" + calcs[Math.floor(calcs.length / 2)]]);
   }
   return properties;
@@ -82,5 +110,9 @@ function SUPPORTED_TEAM_PROPERTIES() {
  * @customfunction
  */
 function SUPPORTED_CHAR_PROPERTIES() {
-  return Object.keys(charsToBuffParams.get('Anby')); // Arbitrary character
+  if (typeof getCharsToBuffParams === 'function') {
+      return Object.keys(getCharsToBuffParams().get('Anby'));
+  }
+  // Fallback if not refactored yet
+  return Object.keys(charsToBuffParams.get('Anby'));
 }

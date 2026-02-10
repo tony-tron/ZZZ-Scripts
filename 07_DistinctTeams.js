@@ -81,7 +81,7 @@ function initalizeBuffExpressions(buffsRange) {
  * Main function to update the sheet.
  */
 function updateDistinctTeamsSheet() {
-  const distinctTeamsSheet = thisSpreadsheet.getSheetByName(distinctTeamsSheetName);
+  const distinctTeamsSheet = getSpreadsheet().getSheetByName(distinctTeamsSheetName);
   const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
   const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
 

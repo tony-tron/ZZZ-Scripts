@@ -9,7 +9,7 @@ const shiyuDefenseFrontier4BuffsRangeA1 = "F8:G";
 
 
 function getShiyuDefenseFrontier4Context() {
-  const sheet = thisSpreadsheet.getSheetByName(shiyuDefenseFrontier4SheetName);
+  const sheet = getSpreadsheet().getSheetByName(shiyuDefenseFrontier4SheetName);
   const distinctTeamsRange = sheet.getRange(shiyuDefenseFrontier4DistinctTeamsA1);
   return {
     sheet: sheet,

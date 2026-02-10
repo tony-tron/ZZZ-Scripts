@@ -1,12 +1,43 @@
 /** @OnlyCurrentDoc */
 
-const charactersSheet = thisSpreadsheet.getSheetByName("Characters");
-const characterHeadersRange = charactersSheet.getRange("A1:ZZZ1");
-const characterNamesRange = charactersSheet.getRange("A2:A");
-const characterNames2D = characterNamesRange.getValues();
-const characterBuiltRange = charactersSheet.getRange("B2:B");
-const charactersDataRange = charactersSheet.getDataRange();
-var charactersColumns = initCharactersColumns();
+// Refactored to remove global spreadsheet reads.
+
+var charactersColumns; // Lazy loaded
+var _characterNames2D; // Cache for character names
+
+function getCharactersSheet() {
+  return getSpreadsheet().getSheetByName("Characters");
+}
+
+function getCharacterHeadersRange() {
+  return getCharactersSheet().getRange("A1:ZZZ1");
+}
+
+function getCharacterNamesRange() {
+  return getCharactersSheet().getRange("A2:A");
+}
+
+function getCharacterNames2D() {
+  if (!_characterNames2D) {
+    _characterNames2D = getCharacterNamesRange().getValues();
+  }
+  return _characterNames2D;
+}
+
+function getCharacterBuiltRange() {
+  return getCharactersSheet().getRange("B2:B");
+}
+
+function getCharactersDataRange() {
+  return getCharactersSheet().getDataRange();
+}
+
+function getCharactersColumns() {
+  if (!charactersColumns) {
+    charactersColumns = initCharactersColumns();
+  }
+  return charactersColumns;
+}
 
 function initCharactersColumns() {
   const characterColumns = {
@@ -62,7 +93,8 @@ function initCharactersColumns() {
 }
 
 function setCharactersBuilt(characterNames, builts) {
-  const builtCharacters = characterBuiltRange.getValues();
+  const builtCharactersRange = getCharacterBuiltRange();
+  const builtCharacters = builtCharactersRange.getValues();
   for (var i = 0; i < characterNames.length; i++) {
     const characterName = characterNames[i];
     const built = builts[i];
@@ -72,15 +104,16 @@ function setCharactersBuilt(characterNames, builts) {
     }
     builtCharacters[characterRowIndex][0] = built;
   }
-  charactersSheet.getRange(characterBuiltRange.getRow(),
-    characterBuiltRange.getColumn(), characterBuiltRange.getNumRows())
+  getCharactersSheet().getRange(builtCharactersRange.getRow(),
+    builtCharactersRange.getColumn(), builtCharactersRange.getNumRows())
     .setValues(builtCharacters);
 }
 
 function getCharacterNames() {
   const characterNames = [];
-  for (var r = 0; r < characterNames2D.length; r++) {
-    const characterName = characterNames2D[r][0];
+  const names2D = getCharacterNames2D();
+  for (var r = 0; r < names2D.length; r++) {
+    const characterName = names2D[r][0];
     if (characterName == null || characterName == "") break;
     characterNames.push(characterName);
   }
@@ -110,8 +143,9 @@ function QUERY_VARIABLE_NAMES_TO_COLUMNS(partialQueryWithNames) {
 
   try {
     // 1. Get Headers and Starting Column
-    const headers = characterHeadersRange.getValues()[0];
-    const firstColIndex = characterHeadersRange.getColumn(); // 1-based index
+    const headersRange = getCharacterHeadersRange();
+    const headers = headersRange.getValues()[0];
+    const firstColIndex = headersRange.getColumn(); // 1-based index
 
     // 2. Create Mapping from Header Name to Column Letter
     const nameToLetterMap = {};

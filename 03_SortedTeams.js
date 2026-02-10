@@ -8,7 +8,7 @@ const sortedTeamsRangeString = "A2:D";
 const metaStrengthThresholdRangeString = "G5";
 
 function getSortedTeamsSheet() {
-  return thisSpreadsheet.getSheetByName(sortedTeamsSheetName);
+  return getSpreadsheet().getSheetByName(sortedTeamsSheetName);
 }
 
 /**

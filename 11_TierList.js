@@ -1,7 +1,6 @@
 /** @OnlyCurrentDoc */
 
 const tierListSheetName = "Tier List";
-const tierListSheet = thisSpreadsheet.getSheetByName(tierListSheetName);
 const recalculateTierListCheckbox = "I3";
 const tierListBreakpointsRange = "F2:G";
 const characterOutputRange = "A2:E";
@@ -10,20 +9,26 @@ const tierListOnlyIncludeReleasedCheckbox = "I7";
 const tierScoreStrongerWeightRange = "I8";
 const topXPercentStrongestTeamRange = "I9";
 
+function getTierListSheet() {
+  return getSpreadsheet().getSheetByName(tierListSheetName);
+}
+
 function getTierListParams() {
+  const sheet = getTierListSheet();
   return {
-    tierScoreStrongerWeight: tierListSheet.getRange(tierScoreStrongerWeightRange).getValue(),
-    topXPercentStrongestTeam: tierListSheet.getRange(topXPercentStrongestTeamRange).getValue(),
-    tierListBreakpoints: tierListSheet.getRange(tierListBreakpointsRange).getValues(),
+    tierScoreStrongerWeight: sheet.getRange(tierScoreStrongerWeightRange).getValue(),
+    topXPercentStrongestTeam: sheet.getRange(topXPercentStrongestTeamRange).getValue(),
+    tierListBreakpoints: sheet.getRange(tierListBreakpointsRange).getValues(),
   };
 }
 
 function updateTierListSheet() {
-  const tierListOnlyIncludeBuiltCheckboxRange = tierListSheet.getRange(tierListOnlyIncludeBuiltCheckbox);
-  const tierListOnlyIncludeReleasedCheckboxRange = tierListSheet.getRange(tierListOnlyIncludeReleasedCheckbox);
-  const characterOutputRangeObj = tierListSheet.getRange(characterOutputRange);
+  const sheet = getTierListSheet();
+  const tierListOnlyIncludeBuiltCheckboxRange = sheet.getRange(tierListOnlyIncludeBuiltCheckbox);
+  const tierListOnlyIncludeReleasedCheckboxRange = sheet.getRange(tierListOnlyIncludeReleasedCheckbox);
+  const characterOutputRangeObj = sheet.getRange(characterOutputRange);
 
-  const dataValues = tierListSheet.getDataRange().getValues();
+  const dataValues = sheet.getDataRange().getValues();
   const tempOnlyIncludeBuilt = dataValues
     [tierListOnlyIncludeBuiltCheckboxRange.getRow() - 1]
     [tierListOnlyIncludeBuiltCheckboxRange.getColumn() - 1];
@@ -66,11 +71,12 @@ function updateTierListFormatting(characterOutputRange) {
   const tierRanges = [];
   var currTier = "Tier 0";
   var currTierStartRow = 0;
+  const sheet = getTierListSheet();
   for (var r = 0; r < output.length; r++) {
     const tier = output[r][output[r].length - 1];
     if (tier !== currTier) {
       tierRanges.push(
-        tierListSheet.getRange(characterOutputRange.getRow() + currTierStartRow,
+        sheet.getRange(characterOutputRange.getRow() + currTierStartRow,
         characterOutputRange.getColumn(),
         r - currTierStartRow,
         characterOutputRange.getNumColumns()

@@ -1,24 +1,49 @@
 /** @OnlyCurrentDoc */
 
-const readmeSheet = thisSpreadsheet.getSheetByName("README");
-const latestVersionRange = readmeSheet.getRange("C1");
-const extraSynergySheet = thisSpreadsheet.getSheetByName("Extra Synergy");
-const extraSynergyRange = extraSynergySheet.getRange("A1");
-const sumSynergySheet = thisSpreadsheet.getSheetByName("Sum 2: Synergy");
-const synergyBonusRange = sumSynergySheet.getRange("J2");
-const sumExtraSynergySheet = thisSpreadsheet.getSheetByName("Sum 3: Extra Synergy");
-const extraSynergyBonusRange = sumExtraSynergySheet.getRange("K2");
+// Removed global constants. Fetched dynamically.
+
+function getReadmeSheet() {
+  return getSpreadsheet().getSheetByName("README");
+}
+
+function getLatestVersionRange() {
+  return getReadmeSheet().getRange("C1");
+}
+
+function getExtraSynergySheet() {
+  return getSpreadsheet().getSheetByName("Extra Synergy");
+}
+
+function getExtraSynergyRange() {
+  return getExtraSynergySheet().getRange("A1");
+}
+
+function getSumSynergySheet() {
+  return getSpreadsheet().getSheetByName("Sum 2: Synergy");
+}
+
+function getSynergyBonusRange() {
+  return getSumSynergySheet().getRange("J2");
+}
+
+function getSumExtraSynergySheet() {
+  return getSpreadsheet().getSheetByName("Sum 3: Extra Synergy");
+}
+
+function getExtraSynergyBonusRange() {
+  return getSumExtraSynergySheet().getRange("K2");
+}
 
 function refreshLatestVersion() {
-  refreshFormulasForRanges([latestVersionRange],
+  refreshFormulasForRanges([getLatestVersionRange()],
   ['=IMPORTRANGE("https://docs.google.com/spreadsheets/d/1PdatbmxA9f1MXNmv4XCn9BUWFl8ZGVi776Px4VzuwV4/edit", "\'Version History\'!A1:B")']);
 }
 
 function refreshAllCustomFormulas(fastRefresh = false) {
   const rangesToRefresh = [
-    extraSynergyRange,
-    synergyBonusRange,
-    extraSynergyBonusRange,
+    getExtraSynergyRange(),
+    getSynergyBonusRange(),
+    getExtraSynergyBonusRange(),
   ];
 
   const formulasInRefreshedRanges = [
