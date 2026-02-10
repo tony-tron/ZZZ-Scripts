@@ -73,7 +73,13 @@ function refreshLatestVersion() {
 }
 
 function refreshAllCustomFormulas(fastRefresh = false) {
-  const rangesToRefresh = [
+  _charsToBuffParams = null;
+  teamCharsToTeamObjs = null;
+  init();
+
+  const rangesToRefresh = fastRefresh
+  ? [getExtraSynergyBonusRange()]
+  : [
     getExtraSynergyRange(),
     getSynergyBonusRange(),
     getExtraSynergyBonusRange(),
@@ -82,22 +88,20 @@ function refreshAllCustomFormulas(fastRefresh = false) {
   const formulasInRefreshedRanges = [
     '=MAP(QUERY(Characters!A2:A, "SELECT A WHERE A IS NOT NULL"), QUERY(Characters!A2:L, "SELECT L WHERE A IS NOT NULL"), LAMBDA(char, aa_query, {char, IFERROR(TRANSPOSE(QUERY(Characters!A2:BG, "SELECT A WHERE "&QUERY_VARIABLE_NAMES_TO_COLUMNS(aa_query)&"AND NOT A=\'"&char&"\'", 0)))}))',
     '=CALCULATE_SYNERGY_BUFFS(K2:S)',
-    '=CALCULATE_BUFFS({F2:F, G2:G, H2:H, ARRAYFORMULA(IF(ISBLANK(F2:F), , MAP(F2:F, G2:G, H2:H, LAMBDA(char1, char2, char3, "(" & IFNOTBLANK(VLOOKUP(char1, Characters!$A$2:$T, 14, FALSE), "0") & ") + (" & IFNOTBLANK(VLOOKUP(char2, Characters!$A$2:$BD, 14, FALSE), "0") & ") + (" & IFNOTBLANK(VLOOKUP(char3, Characters!$A$2:$T, 14, FALSE), "0") & ")"))))})',
+    '=CALCULATE_TEAM_BUFFS(F2:H)',
   ]
 
-  refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges, fastRefresh);
+  refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges);
 }
 
-function refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges, fastRefresh = false) {
+function refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges) {
   // 1. Clear all ranges
   rangesToRefresh.forEach(range => {
     range.clearContent();
   });
 
   // 2. First Flush: Ensures all ranges are actually cleared in the sheet
-  if (!fastRefresh) {
-    SpreadsheetApp.flush();
-  }
+  SpreadsheetApp.flush();
 
   // 3. Restore all formulas
   rangesToRefresh.forEach((range, index) => {

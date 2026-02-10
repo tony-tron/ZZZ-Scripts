@@ -12,8 +12,6 @@ function getSpreadsheet() {
 }
 
 function init() {
-  charactersColumns = initCharactersColumns();
-  charsToBuffParams = initCharsToBuffParams();
   initializeAllTeamsAndBuffParams();
 }
 

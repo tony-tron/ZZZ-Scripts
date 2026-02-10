@@ -1,12 +1,12 @@
 /** @OnlyCurrentDoc */
 
-var charsToBuffParams;
+var _charsToBuffParams;
 
 function getCharsToBuffParams() {
-  if (!charsToBuffParams) {
-    charsToBuffParams = initCharsToBuffParams();
+  if (!_charsToBuffParams) {
+    _charsToBuffParams = initCharsToBuffParams();
   }
-  return charsToBuffParams;
+  return _charsToBuffParams;
 }
 
 // Cache to store compiled functions. 
@@ -17,7 +17,7 @@ const formulaCache = {};
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
   const charactersData = getCharactersDataRange().getValues();
-  const cols = getCharactersColumns(); // Use getter
+  const cols = getCharactersColumns();
 
   getCharacterNames().forEach((character, row) => {
     row += 1; // Header.
@@ -52,6 +52,7 @@ function initCharsToBuffParams() {
       defensiveAssist : assistType == "Defensive" ? 1 : 0,
       evasiveAssist : assistType == "Evasive" ? 1 : 0,
 
+      teamBuffFunction : compileBuffFunction(String(charactersData[row][cols.teamBuffFormula] || "0")),
       tags : String(charactersData[row][cols.tags]),
 
       fieldTime : fieldTime,
@@ -440,6 +441,27 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
 }
 
 /**
+ * Compiles a formula string into an executable function.
+ * @param {string} expression The formula string (e.g., "1 + damageFocus * 0.5").
+ * @return {Function} A function that takes a 'team' object and returns a number.
+ */
+function compileBuffFunction(expression) {
+  if (!expression || expression === "0" || expression.trim() === "") {
+    // Return a dummy function that always returns 0 (extremely fast)
+    return function() { return 0; };
+  }
+
+  // Create a function that takes 'ctx' (context/team) and executes the math
+  // We use "Number()" to ensure the result is always a valid number.
+  try {
+    return new Function("ctx", "with(ctx) { return Number(" + expression + "); }");
+  } catch (e) {
+    console.error("Failed to compile formula: " + expression, e);
+    return function() { return 0; };
+  }
+}
+
+/**
  * Calculates the total strength bonus for a single team from a list of buff expressions.
  * @param {object} team - A team object with a calculateBuff method.
  * @param {Array<string>} teamBuffExpressions - A list of buff expressions to apply.
@@ -609,9 +631,10 @@ function getTeamOrCreateSafe(char1, char2, char3) {
 
   // Verify characters exist.
   // Note: char2/char3 might be empty strings if not provided, but addBuffParamsToTeam requires valid params.
-  if (charsToBuffParams.has(char1) &&
-      charsToBuffParams.has(char2) &&
-      charsToBuffParams.has(char3)) {
+  const params = getCharsToBuffParams();
+  if (params.has(char1) &&
+      params.has(char2) &&
+      params.has(char3)) {
 
      const team = {
        characters: [char1, char2, char3]
@@ -635,7 +658,6 @@ function getTeamOrCreateSafe(char1, char2, char3) {
  */
 function CALCULATE_BUFFS(charactersAndBuffExpressions) {
   const buffs = [];
-  const teamObjs = getTeamCharsToTeamObjs();
   for (var r = 0; r < charactersAndBuffExpressions.length; r++) {
     var character1 = charactersAndBuffExpressions[r][0];
     if (character1 == null || character1 == "") break;
@@ -656,6 +678,58 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
   }
   return buffs;
 }
+
+/**
+ * Calculates buffs based on the internal team buff formulas of the characters provided.
+ * Replaces the need to VLOOKUP formulas in the sheet.
+ *
+ * @param {Array<Array<string>>} teamRange The range of character names (e.g., F2:H).
+ * @param {Array<string>} triggerRange, not used by the formula but invalidates the
+ *  cache if the values in the range change.
+ * @customfunction
+ */
+function CALCULATE_TEAM_BUFFS(teamRange, triggerRange) {
+  // 1. Initialize data once
+  const results = [];
+
+  // 2. Iterate through the rows
+  for (let i = 0; i < teamRange.length; i++) {
+    const row = teamRange[i];
+    const char1 = row[0];
+
+    // Fast exit for empty rows
+    if (!char1) {
+      break;
+    }
+
+    const char2 = row[1];
+    const char3 = row[2];
+
+    // 3. Get the team object (calculates combined stats)
+    const team = getTeamOrCreateSafe(char1, char2, char3);
+
+    if (!team) {
+      break;
+    }
+
+    // 4. Retrieve the individual functions we cached in initCharsToBuffParams
+    const allParams = getCharsToBuffParams();
+    const p1 = allParams.get(char1);
+    const p2 = allParams.get(char2);
+    const p3 = allParams.get(char3);
+
+    // 5. Execute pre-compiled functions directly.
+    let totalBuff = 0;
+    if (p1) totalBuff += p1.teamBuffFunction(team);
+    if (p2) totalBuff += p2.teamBuffFunction(team);
+    if (p3) totalBuff += p3.teamBuffFunction(team);
+
+    results.push([Math.round(totalBuff * 4) / 4]);
+  }
+
+  return results;
+}
+
 /**
  * Evaluates the javascript buff function based on the columns:
  * Character1 Character2 Character3 char1HasSynergy char2HasSynergy char3HasSynergy char1BuffFunction char2BuffFunction char3BuffFunction

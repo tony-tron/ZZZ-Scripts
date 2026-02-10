@@ -40,7 +40,7 @@ function initializeAllTeamsAndBuffParams() {
       characters : [_teams[r][0], _teams[r][1], _teams[r][2]]
     }
 
-    if (!params.has(team.characters[0])) continue;
+    if (!params.has(team.characters[0])) break;
     addBuffParamsToTeam(team);
     teamCharsToTeamObjs[team.characters.join("|")] = team;
     for (const property in team) {

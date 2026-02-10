@@ -2,8 +2,8 @@
 
 // Refactored to remove global spreadsheet reads.
 
-var charactersColumns; // Lazy loaded
-var _characterNames2D; // Cache for character names
+var _charactersColumns;
+var _characterNames2D;
 var _charactersSheet;
 var _characterHeadersRange;
 var _characterNamesRange;
@@ -53,10 +53,10 @@ function getCharactersDataRange() {
 }
 
 function getCharactersColumns() {
-  if (!charactersColumns) {
-    charactersColumns = initCharactersColumns();
+  if (!_charactersColumns) {
+    _charactersColumns = initCharactersColumns();
   }
-  return charactersColumns;
+  return _charactersColumns;
 }
 
 function initCharactersColumns() {
@@ -74,7 +74,7 @@ function initCharactersColumns() {
     synergyBonus : 10,
     extraSynergy : 11,
     extraSynergyBonus : 12,
-    teamSynergy : 13,
+    teamBuffFormula : 13,
     tags : 19,
     fieldTime : 20,
     stunBuildup : 21,
