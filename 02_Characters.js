@@ -4,17 +4,31 @@
 
 var charactersColumns; // Lazy loaded
 var _characterNames2D; // Cache for character names
+var _charactersSheet;
+var _characterHeadersRange;
+var _characterNamesRange;
+var _characterBuiltRange;
+var _charactersDataRange;
 
 function getCharactersSheet() {
-  return getSpreadsheet().getSheetByName("Characters");
+  if (!_charactersSheet) {
+    _charactersSheet = getSpreadsheet().getSheetByName("Characters");
+  }
+  return _charactersSheet;
 }
 
 function getCharacterHeadersRange() {
-  return getCharactersSheet().getRange("A1:ZZZ1");
+  if (!_characterHeadersRange) {
+    _characterHeadersRange = getCharactersSheet().getRange("A1:ZZZ1");
+  }
+  return _characterHeadersRange;
 }
 
 function getCharacterNamesRange() {
-  return getCharactersSheet().getRange("A2:A");
+  if (!_characterNamesRange) {
+    _characterNamesRange = getCharactersSheet().getRange("A2:A");
+  }
+  return _characterNamesRange;
 }
 
 function getCharacterNames2D() {
@@ -25,11 +39,17 @@ function getCharacterNames2D() {
 }
 
 function getCharacterBuiltRange() {
-  return getCharactersSheet().getRange("B2:B");
+  if (!_characterBuiltRange) {
+    _characterBuiltRange = getCharactersSheet().getRange("B2:B");
+  }
+  return _characterBuiltRange;
 }
 
 function getCharactersDataRange() {
-  return getCharactersSheet().getDataRange();
+  if (!_charactersDataRange) {
+    _charactersDataRange = getCharactersSheet().getDataRange();
+  }
+  return _charactersDataRange;
 }
 
 function getCharactersColumns() {

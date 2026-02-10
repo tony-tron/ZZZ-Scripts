@@ -2,36 +2,69 @@
 
 // Removed global constants. Fetched dynamically.
 
+var _readmeSheet;
+var _latestVersionRange;
+var _extraSynergySheet;
+var _extraSynergyRange;
+var _sumSynergySheet;
+var _synergyBonusRange;
+var _sumExtraSynergySheet;
+var _extraSynergyBonusRange;
+
 function getReadmeSheet() {
-  return getSpreadsheet().getSheetByName("README");
+  if (!_readmeSheet) {
+    _readmeSheet = getSpreadsheet().getSheetByName("README");
+  }
+  return _readmeSheet;
 }
 
 function getLatestVersionRange() {
-  return getReadmeSheet().getRange("C1");
+  if (!_latestVersionRange) {
+    _latestVersionRange = getReadmeSheet().getRange("C1");
+  }
+  return _latestVersionRange;
 }
 
 function getExtraSynergySheet() {
-  return getSpreadsheet().getSheetByName("Extra Synergy");
+  if (!_extraSynergySheet) {
+    _extraSynergySheet = getSpreadsheet().getSheetByName("Extra Synergy");
+  }
+  return _extraSynergySheet;
 }
 
 function getExtraSynergyRange() {
-  return getExtraSynergySheet().getRange("A1");
+  if (!_extraSynergyRange) {
+    _extraSynergyRange = getExtraSynergySheet().getRange("A1");
+  }
+  return _extraSynergyRange;
 }
 
 function getSumSynergySheet() {
-  return getSpreadsheet().getSheetByName("Sum 2: Synergy");
+  if (!_sumSynergySheet) {
+    _sumSynergySheet = getSpreadsheet().getSheetByName("Sum 2: Synergy");
+  }
+  return _sumSynergySheet;
 }
 
 function getSynergyBonusRange() {
-  return getSumSynergySheet().getRange("J2");
+  if (!_synergyBonusRange) {
+    _synergyBonusRange = getSumSynergySheet().getRange("J2");
+  }
+  return _synergyBonusRange;
 }
 
 function getSumExtraSynergySheet() {
-  return getSpreadsheet().getSheetByName("Sum 3: Extra Synergy");
+  if (!_sumExtraSynergySheet) {
+    _sumExtraSynergySheet = getSpreadsheet().getSheetByName("Sum 3: Extra Synergy");
+  }
+  return _sumExtraSynergySheet;
 }
 
 function getExtraSynergyBonusRange() {
-  return getSumExtraSynergySheet().getRange("K2");
+  if (!_extraSynergyBonusRange) {
+    _extraSynergyBonusRange = getSumExtraSynergySheet().getRange("K2");
+  }
+  return _extraSynergyBonusRange;
 }
 
 function refreshLatestVersion() {

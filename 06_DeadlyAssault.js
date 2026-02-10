@@ -3,16 +3,29 @@
 const deadlyAssaultSheetName = "Deadly Assault";
 const recalculateDeadlyAssaultCheckbox = "H2";
 
+var _deadlyAssaultSheet;
+var _deadlyAssaultDistinctTeamsRange;
+var _deadlyAssaultBuffsRange;
+
 function getDeadlyAssaultSheet() {
-  return getSpreadsheet().getSheetByName(deadlyAssaultSheetName);
+  if (!_deadlyAssaultSheet) {
+    _deadlyAssaultSheet = getSpreadsheet().getSheetByName(deadlyAssaultSheetName);
+  }
+  return _deadlyAssaultSheet;
 }
 
 function getDeadlyAssaultDistinctTeamsRange() {
-  return getDeadlyAssaultSheet().getRange("A2:E");
+  if (!_deadlyAssaultDistinctTeamsRange) {
+    _deadlyAssaultDistinctTeamsRange = getDeadlyAssaultSheet().getRange("A2:E");
+  }
+  return _deadlyAssaultDistinctTeamsRange;
 }
 
 function getDeadlyAssaultBuffsRange() {
-  return getDeadlyAssaultSheet().getRange("G8:H");
+  if (!_deadlyAssaultBuffsRange) {
+    _deadlyAssaultBuffsRange = getDeadlyAssaultSheet().getRange("G8:H");
+  }
+  return _deadlyAssaultBuffsRange;
 }
 
 var deadlyAssaultTeam1BuffExpressions = [];

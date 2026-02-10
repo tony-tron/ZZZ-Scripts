@@ -11,8 +11,13 @@ var shiyuDefenseFrontier5Team1BuffExpressions = [];
 var shiyuDefenseFrontier5Team2BuffExpressions = [];
 var shiyuDefenseFrontier5Team3BuffExpressions = [];
 
+var _shiyuDefenseFrontier5Sheet;
+
 function getShiyuDefenseFrontier5Sheet() {
-  return getSpreadsheet().getSheetByName(shiyuDefenseFrontier5SheetName);
+  if (!_shiyuDefenseFrontier5Sheet) {
+    _shiyuDefenseFrontier5Sheet = getSpreadsheet().getSheetByName(shiyuDefenseFrontier5SheetName);
+  }
+  return _shiyuDefenseFrontier5Sheet;
 }
 
 function initalizeShiyuDefenseFrontier5BuffExpressions() {

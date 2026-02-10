@@ -1,19 +1,18 @@
 /** @OnlyCurrentDoc */
 
 // Removed global spreadsheet read. Use getSpreadsheet() instead.
-// const thisSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+var _spreadsheet;
 
 function getSpreadsheet() {
-  return SpreadsheetApp.getActiveSpreadsheet();
+  if (!_spreadsheet) {
+    _spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  }
+  return _spreadsheet;
 }
 
 function init() {
   charactersColumns = initCharactersColumns();
-  // charsToBuffParams will be initialized lazily or here.
-  // If we change charsToBuffParams to be a getter, we might not need to assign it here,
-  // or we assign it to the underlying variable.
-  // For now, I will keep init() structure but it might need update when I refactor other files.
-  // Assuming other files will change `const/var x = init()` to `var x;`
   if (typeof initCharsToBuffParams === 'function') {
       charsToBuffParams = initCharsToBuffParams();
   }

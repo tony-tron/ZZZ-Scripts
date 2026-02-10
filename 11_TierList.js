@@ -9,8 +9,13 @@ const tierListOnlyIncludeReleasedCheckbox = "I7";
 const tierScoreStrongerWeightRange = "I8";
 const topXPercentStrongestTeamRange = "I9";
 
+var _tierListSheet;
+
 function getTierListSheet() {
-  return getSpreadsheet().getSheetByName(tierListSheetName);
+  if (!_tierListSheet) {
+    _tierListSheet = getSpreadsheet().getSheetByName(tierListSheetName);
+  }
+  return _tierListSheet;
 }
 
 function getTierListParams() {
@@ -60,7 +65,7 @@ function updateTierListSheet() {
 
   updateTierListFormatting(characterOutputRangeObj);
 
-  sortedTeamsCheckboxesRange.setValues(oldSortedTeamsCheckboxValues);
+  getSortedTeamsCheckboxesRange().setValues(oldSortedTeamsCheckboxValues);
 }
 
 /** Adds borders between tiers. (Colors are handled via Conditional Formatting) */

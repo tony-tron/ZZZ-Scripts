@@ -3,8 +3,13 @@
 var teamCharsToTeamObjs;
 var supportedTeamPropertiesToCalcs;
 
+var _allPossibleTeamsSheet;
+
 function getAllPossibleTeamsSheet() {
-  return getSpreadsheet().getSheetByName("All Possible Teams");
+  if (!_allPossibleTeamsSheet) {
+    _allPossibleTeamsSheet = getSpreadsheet().getSheetByName("All Possible Teams");
+  }
+  return _allPossibleTeamsSheet;
 }
 
 function getTeamCharsToTeamObjs() {
@@ -26,10 +31,13 @@ function initializeAllTeamsAndBuffParams() {
   supportedTeamPropertiesToCalcs = {};
 
   // Ensure charsToBuffParams is initialized
+  var params;
   if (typeof getCharsToBuffParams === 'function') {
-      getCharsToBuffParams();
-  } else if (!charsToBuffParams && typeof initCharsToBuffParams === 'function') {
-      charsToBuffParams = initCharsToBuffParams();
+      params = getCharsToBuffParams();
+  } else if (typeof initCharsToBuffParams === 'function') {
+      // Fallback
+      if (!charsToBuffParams) charsToBuffParams = initCharsToBuffParams();
+      params = charsToBuffParams;
   }
 
   const _teams = getAllPossibleTeamsSheet().getDataRange().getValues();
@@ -38,8 +46,8 @@ function initializeAllTeamsAndBuffParams() {
     var team = {
       characters : [_teams[r][0], _teams[r][1], _teams[r][2]]
     }
-    // Using global charsToBuffParams - assuming it is populated
-    if (!charsToBuffParams.has(team.characters[0])) continue;
+    // Using local params reference
+    if (!params.has(team.characters[0])) continue;
     addBuffParamsToTeam(team);
     teamCharsToTeamObjs[team.characters.join("|")] = team;
     for (const property in team) {
