@@ -3,9 +3,7 @@
 const thisSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
 function init() {
-  charactersColumns = initCharactersColumns();
-  charsToBuffParams = initCharsToBuffParams();
-  initializeAllTeamsAndBuffParams();
+  // Lazily initialized in respective files.
 }
 
 function onOpen() {

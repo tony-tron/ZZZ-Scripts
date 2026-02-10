@@ -1,6 +1,11 @@
 /** @OnlyCurrentDoc */
 
-var charsToBuffParams = initCharsToBuffParams();
+let _charsToBuffParams;
+function getCharsToBuffParams() {
+  if (!_charsToBuffParams) _charsToBuffParams = initCharsToBuffParams();
+  return _charsToBuffParams;
+}
+
 // Cache to store compiled functions. 
 // Keys are the formula strings, values are the executable functions.
 const formulaCache = {};
@@ -8,7 +13,8 @@ const formulaCache = {};
 // Initializes all of the params per character (aggregating for the team is done in addBuffParamsToTeam).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
-  const charactersData = charactersDataRange.getValues();
+  // charactersDataRange is now a function in 02_Characters.js
+  const charactersData = getCharactersDataRange().getValues();
   getCharacterNames().forEach((character, row) => {
     row += 1; // Header.
 
@@ -109,14 +115,32 @@ function initCharsToBuffParams() {
   return charsToBuffParams;
 }
 
+const _teamCache = new Map();
+
+function getTeamOrCreate(char1, char2, char3) {
+  const key = [char1, char2, char3].join("|");
+  if (_teamCache.has(key)) {
+    return _teamCache.get(key);
+  }
+
+  const team = {
+    characters: [char1, char2, char3]
+  };
+  addBuffParamsToTeam(team);
+  _teamCache.set(key, team);
+  return team;
+}
+
 // Aggregates all of the team params we can reference for buff calculations on the spreadsheet itself.
 function addBuffParamsToTeam(team) {
   const char1 = team.characters[0];
   const char2 = team.characters[1];
   const char3 = team.characters[2];
-  const char1Params = charsToBuffParams.get(char1);
-  const char2Params = charsToBuffParams.get(char2);
-  const char3Params = charsToBuffParams.get(char3);
+
+  const map = getCharsToBuffParams();
+  const char1Params = map.get(char1);
+  const char2Params = map.get(char2);
+  const char3Params = map.get(char3);
 
   team.NumSupport = char1Params.support + char2Params.support + char3Params.support;
   team.NumStun = char1Params.stun + char2Params.stun + char3Params.stun;
@@ -597,7 +621,8 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
     var character2 = charactersAndBuffExpressions[r][1];
     var character3 = charactersAndBuffExpressions[r][2];
     var buffExpression = charactersAndBuffExpressions[r][3];
-    var buff = teamCharsToTeamObjs[[character1, character2, character3].join("|")].calculateBuff(buffExpression);
+    var team = getTeamOrCreate(character1, character2, character3);
+    var buff = team.calculateBuff(buffExpression);
     // Round to the nearest 0.25.
     buff = Math.round(buff * 4) / 4;
     buffs.push([buff]);
@@ -613,9 +638,6 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
 function CALCULATE_SYNERGY_BUFFS(data) {
   const results = [];
   
-  // Create a local reference to the global object to ensure scope access within the loop
-  const lookupMap = teamCharsToTeamObjs; 
-
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const char1 = row[0];
@@ -627,10 +649,7 @@ function CALCULATE_SYNERGY_BUFFS(data) {
     const char2 = row[1];
     const char3 = row[2];
 
-    // Optimization: Construct the key once per row instead of 3 times.
-    // Template literals are generally faster/cleaner than array joins for fixed sizes.
-    const key = `${char1}|${char2}|${char3}`;
-    const teamObj = lookupMap[key];
+    const teamObj = getTeamOrCreate(char1, char2, char3);
 
     let totalBuff = 0;
 
