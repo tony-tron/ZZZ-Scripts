@@ -74,7 +74,7 @@ function refreshLatestVersion() {
 
 function refreshAllCustomFormulas(fastRefresh = false) {
   _charsToBuffParams = null;
-  teamCharsToTeamObjs = null;
+  _teamCharsToTeamObjs = null;
   init();
 
   const rangesToRefresh = fastRefresh

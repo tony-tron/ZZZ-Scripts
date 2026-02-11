@@ -638,7 +638,8 @@ function getAllPermutations(arr) {
  */
 function getTeamOrCreateSafe(char1, char2, char3) {
   const key = [char1, char2, char3].join("|");
-  if (typeof teamCharsToTeamObjs !== 'undefined' && teamCharsToTeamObjs[key]) {
+  const teamCharsToTeamObjs = getTeamCharsToTeamObjs();
+  if (teamCharsToTeamObjs[key]) {
     return teamCharsToTeamObjs[key];
   }
 
@@ -652,10 +653,8 @@ function getTeamOrCreateSafe(char1, char2, char3) {
      // Create new Class Instance
      const team = new Team(char1, char2, char3);
 
-     // Cache it if the global map is available
-     if (typeof teamCharsToTeamObjs !== 'undefined') {
-       teamCharsToTeamObjs[key] = team;
-     }
+     // Cache it in the global map.
+     teamCharsToTeamObjs[key] = team;
      return team;
   }
   return null;
@@ -763,10 +762,7 @@ function CALCULATE_SYNERGY_BUFFS(data) {
 
     const teamObj = getTeamOrCreateSafe(char1, char2, char3);
 
-    if (!teamObj) {
-      results.push([0]);
-      continue;
-    }
+    if (!teamObj) break;
 
     let totalBuff = 0;
 

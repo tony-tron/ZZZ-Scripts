@@ -1,6 +1,6 @@
 /** @OnlyCurrentDoc */
 
-var teamCharsToTeamObjs;
+var _teamCharsToTeamObjs;
 var supportedTeamPropertiesToCalcs;
 
 var _allPossibleTeamsSheet;
@@ -13,10 +13,10 @@ function getAllPossibleTeamsSheet() {
 }
 
 function getTeamCharsToTeamObjs() {
-  if (!teamCharsToTeamObjs) {
+  if (!_teamCharsToTeamObjs) {
     initializeAllTeamsAndBuffParams();
   }
-  return teamCharsToTeamObjs;
+  return _teamCharsToTeamObjs;
 }
 
 function getSupportedTeamPropertiesToCalcs() {
@@ -27,7 +27,7 @@ function getSupportedTeamPropertiesToCalcs() {
 }
 
 function initializeAllTeamsAndBuffParams() {
-  teamCharsToTeamObjs = {};
+  _teamCharsToTeamObjs = {};
   supportedTeamPropertiesToCalcs = {};
 
   // Directly use the getter from 09_BuffUtils.js
@@ -44,7 +44,7 @@ function initializeAllTeamsAndBuffParams() {
 
     var team = new Team(char1, char2, char3);
 
-    teamCharsToTeamObjs[team.characters.join("|")] = team;
+    _teamCharsToTeamObjs[team.characters.join("|")] = team;
     for (const property in team) {
       // By convention, we assume all uppercase properties are variables the user can put in their functions.
       if (property[0] === property[0].toLowerCase()) continue;
