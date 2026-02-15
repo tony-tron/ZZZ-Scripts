@@ -86,13 +86,33 @@ function displayOutputs(outputs, whoToBuildSheet, outputRange, outputClearFormat
   }
   outputClearFormatRange.clearFormat().setTextStyles(textStyles);
   outputRange.clearContent().setValues(outputValues);
-  for (const mergeRowIndex of mergeRowIndices) {
-    whoToBuildSheet.getRange(
-      outputRange.getRow() + mergeRowIndex,
-      outputRange.getColumn(),
-      1, outputRange.getNumColumns() - 1)
-      .setHorizontalAlignment('center').mergeAcross();
+
+  const startRow = outputRange.getRow();
+  const startCol = outputRange.getColumn();
+  const numCols = outputRange.getNumColumns() - 1;
+
+  const startColLetter = columnToLetter(startCol);
+  const endColLetter = columnToLetter(startCol + numCols - 1);
+  const a1Notations = mergeRowIndices.map(mergeRowIndex => {
+    const row = startRow + mergeRowIndex;
+    return startColLetter + row + ":" + endColLetter + row;
+  });
+
+  if (a1Notations.length > 0) {
+    const rangeList = whoToBuildSheet.getRangeList(a1Notations);
+    rangeList.setHorizontalAlignment('center');
+    rangeList.getRanges().forEach(range => range.mergeAcross());
   }
+}
+
+function columnToLetter(column) {
+  var temp, letter = '';
+  while (column > 0) {
+    temp = (column - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    column = (column - temp - 1) / 26;
+  }
+  return letter;
 }
 
 function updateWhoToBuildSheet() {
