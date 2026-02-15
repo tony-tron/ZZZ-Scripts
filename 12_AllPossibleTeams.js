@@ -30,6 +30,13 @@ function initializeAllTeamsAndBuffParams() {
   _teamCharsToTeamObjs = {};
   supportedTeamPropertiesToCalcs = {};
 
+  // Add functions from Team.prototype
+  Object.getOwnPropertyNames(Team.prototype).forEach(prop => {
+    if (prop !== 'constructor' && prop[0] !== prop[0].toLowerCase()) {
+      supportedTeamPropertiesToCalcs[prop] = [];
+    }
+  });
+
   // Directly use the getter from 09_BuffUtils.js
   const params = getCharsToBuffParams();
 
@@ -97,6 +104,10 @@ function SUPPORTED_TEAM_PROPERTIES() {
     }
     if (property === "Nerf") {
       properties.push([property, "Parameter: attributes"]);
+      continue;
+    }
+    if (!props[property] || props[property].length === 0) {
+      properties.push([property, "Function"]);
       continue;
     }
     calcs = props[property].sort((a, b) => a - b);
