@@ -475,6 +475,15 @@ function compileBuffFunction(expression) {
 }
 
 /**
+ * Rounds a number to the nearest 0.25.
+ * @param {number} value The value to round.
+ * @return {number} The rounded value.
+ */
+function roundToQuarter(value) {
+  return Math.round(value * 4) / 4;
+}
+
+/**
  * Calculates the total strength bonus for a single team from a list of buff expressions.
  * @param {object} team - A team object with a calculateBuff method.
  * @param {Array<string>} teamBuffExpressions - A list of buff expressions to apply.
@@ -680,7 +689,7 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
     if (team) {
       var buff = team.calculateBuff(buffExpression);
       // Round to the nearest 0.25.
-      buff = Math.round(buff * 4) / 4;
+      buff = roundToQuarter(buff);
       buffs.push([buff]);
     } else {
       buffs.push([0]);
@@ -734,7 +743,7 @@ function CALCULATE_TEAM_BUFFS(teamRange, triggerRange) {
     if (p2) totalBuff += p2.teamBuffFunction(team);
     if (p3) totalBuff += p3.teamBuffFunction(team);
 
-    results.push([Math.round(totalBuff * 4) / 4]);
+    results.push([roundToQuarter(totalBuff)]);
   }
 
   return results;
@@ -773,7 +782,7 @@ function CALCULATE_SYNERGY_BUFFS(data) {
     if (row[5]) totalBuff += teamObj.calculateBuff(row[8]);
 
     // Round to the nearest 0.25
-    results.push([Math.round(totalBuff * 4) / 4]);
+    results.push([roundToQuarter(totalBuff)]);
   }
 
   return results;
