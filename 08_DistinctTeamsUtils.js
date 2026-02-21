@@ -117,13 +117,15 @@ function computeBestDistinctTeamTriples(teams, team1BuffExpressions, team2BuffEx
   const buffList = [team1BuffExpressions, team2BuffExpressions, team3BuffExpressions]; // Fixed buff slots
 
   for (let i = 0; i < teams.length; i++) {
+    const team1 = teams[i];
     for (let j = i + 1; j < teams.length; j++) {
+      const team2 = teams[j];
+      if (!hasUniqueCharacters(team1.characters, team2.characters)) continue;
+
       for (let k = j + 1; k < teams.length; k++) {
-        const team1 = teams[i];
-        const team2 = teams[j];
         const team3 = teams[k];
 
-        if (all3HaveUniqueCharacters(team1.characters, team2.characters, team3.characters)) {
+        if (hasUniqueCharacters(team1.characters, team3.characters) && hasUniqueCharacters(team2.characters, team3.characters)) {
           
           const teamSlots = [{ team: team1 }, { team: team2 }, { team: team3 }];
           
@@ -190,12 +192,20 @@ function computeBestDistinctTeamQuads(teams, buffExpressionsList, buffOptions) {
   const teamQuads = [];
   
   for (let i = 0; i < teams.length; i++) {
+    const team1 = teams[i];
     for (let j = i + 1; j < teams.length; j++) {
-      for (let k = j + 1; k < teams.length; k++) {
-        for (let l = k + 1; l < teams.length; l++) {
-          const teamList = [teams[i], teams[j], teams[k], teams[l]];
+      const team2 = teams[j];
+      if (!hasUniqueCharacters(team1.characters, team2.characters)) continue;
 
-          if (allTeamsHaveUniqueCharacters(teamList)) {
+      for (let k = j + 1; k < teams.length; k++) {
+        const team3 = teams[k];
+        if (!hasUniqueCharacters(team1.characters, team3.characters) || !hasUniqueCharacters(team2.characters, team3.characters)) continue;
+
+        for (let l = k + 1; l < teams.length; l++) {
+          const team4 = teams[l];
+
+          if (hasUniqueCharacters(team1.characters, team4.characters) && hasUniqueCharacters(team2.characters, team4.characters) && hasUniqueCharacters(team3.characters, team4.characters)) {
+            const teamList = [team1, team2, team3, team4];
             const teamSlots = teamList.map(team => ({ team }));
             const result = optimizeTeamAssignments(teamSlots, buffExpressionsList);
 
