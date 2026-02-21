@@ -101,6 +101,9 @@ function initCharsToBuffParams() {
       aftershockFocus : aftershockFocus,
       aftershockDamage : aftershockFocus * damageFocus / 2,
       exSpecialFocus : Number(charactersData[row][cols.exSpecialFocus]),
+      exSpecialBuffUptime: function(uptimeSeconds) {
+        return Math.min(1, this.exSpecialFocus * uptimeSeconds / 10);
+      },
       ultimateFocus : Number(charactersData[row][cols.ultimateFocus]),
       ultimateEnablement : Number(charactersData[row][cols.ultimateEnablement]),
 
