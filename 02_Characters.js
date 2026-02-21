@@ -9,6 +9,7 @@ var _characterHeadersRange;
 var _characterNamesRange;
 var _characterBuiltRange;
 var _charactersDataRange;
+var _characterRowIndexMap;
 
 function getCharactersSheet() {
   if (!_charactersSheet) {
@@ -140,8 +141,22 @@ function getCharacterNames() {
   return characterNames;
 }
 
+function getCharacterRowIndexMap() {
+  if (!_characterRowIndexMap) {
+    _characterRowIndexMap = new Map();
+    const characterNames = getCharacterNames();
+    for (var i = 0; i < characterNames.length; i++) {
+      if (!_characterRowIndexMap.has(characterNames[i])) {
+        _characterRowIndexMap.set(characterNames[i], i);
+      }
+    }
+  }
+  return _characterRowIndexMap;
+}
+
 function getCharacterRowIndex(name) {
-  return getCharacterNames().findIndex(charName => charName === name);
+  const map = getCharacterRowIndexMap();
+  return map.has(name) ? map.get(name) : -1;
 }
 
 function getNumCharacters() {
