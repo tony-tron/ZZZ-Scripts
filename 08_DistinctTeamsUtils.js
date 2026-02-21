@@ -190,60 +190,71 @@ function computeBestDistinctTeamQuads(teams, buffExpressionsList, buffOptions) {
   const teamQuads = [];
   
   for (let i = 0; i < teams.length; i++) {
+    const team1 = teams[i];
     for (let j = i + 1; j < teams.length; j++) {
+      const team2 = teams[j];
+      if (!hasUniqueCharacters(team1.characters, team2.characters)) continue;
+
       for (let k = j + 1; k < teams.length; k++) {
+        const team3 = teams[k];
+        if (!hasUniqueCharacters(team1.characters, team3.characters) ||
+            !hasUniqueCharacters(team2.characters, team3.characters)) continue;
+
         for (let l = k + 1; l < teams.length; l++) {
-          const teamList = [teams[i], teams[j], teams[k], teams[l]];
+          const team4 = teams[l];
+          if (!hasUniqueCharacters(team1.characters, team4.characters) ||
+              !hasUniqueCharacters(team2.characters, team4.characters) ||
+              !hasUniqueCharacters(team3.characters, team4.characters)) continue;
 
-          if (allTeamsHaveUniqueCharacters(teamList)) {
-            const teamSlots = teamList.map(team => ({ team }));
-            const result = optimizeTeamAssignments(teamSlots, buffExpressionsList);
+          const teamList = [team1, team2, team3, team4];
 
-            const teamQuad = {
-              team1: result.optimizedSlots[0].team,
-              team2: result.optimizedSlots[1].team,
-              team3: result.optimizedSlots[2].team,
-              team4: result.optimizedSlots[3].team,
-              team1Bonus: result.bonuses[0],
-              team2Bonus: result.bonuses[1],
-              team3Bonus: result.bonuses[2],
-              team4Bonus: result.bonuses[3],
-              team1ChosenBonusName: "",
-              team2ChosenBonusName: "",
-              team3ChosenBonusName: "",
-              team4ChosenBonusName: "",
-              team1ChosenBonus: 0,
-              team2ChosenBonus: 0,
-              team3ChosenBonus: 0,
-              team4ChosenBonus: 0,
-            };
+          const teamSlots = teamList.map(team => ({ team }));
+          const result = optimizeTeamAssignments(teamSlots, buffExpressionsList);
 
-            teamQuad.totalStrength = function() {
-              let base = this.team1.strength + this.team2.strength + this.team3.strength + this.team4.strength;
-              let slotBonus = this.team1Bonus + this.team2Bonus + this.team3Bonus + this.team4Bonus;
-              let chosenBonus = this.team1ChosenBonus + this.team2ChosenBonus + this.team3ChosenBonus + this.team4ChosenBonus;
-              return Math.round((base + slotBonus + chosenBonus) * 1000) / 1000;
-            };
-            teamQuad.minStrength = function() {
-              return Math.round(Math.min(
-                this.team1.strength + this.team1Bonus + this.team1ChosenBonus,
-                this.team2.strength + this.team2Bonus + this.team2ChosenBonus,
-                this.team3.strength + this.team3Bonus + this.team3ChosenBonus,
-                this.team4.strength + this.team4Bonus + this.team4ChosenBonus
-              ) * 1000) / 1000;
-            };
+          const teamQuad = {
+            team1: result.optimizedSlots[0].team,
+            team2: result.optimizedSlots[1].team,
+            team3: result.optimizedSlots[2].team,
+            team4: result.optimizedSlots[3].team,
+            team1Bonus: result.bonuses[0],
+            team2Bonus: result.bonuses[1],
+            team3Bonus: result.bonuses[2],
+            team4Bonus: result.bonuses[3],
+            team1ChosenBonusName: "",
+            team2ChosenBonusName: "",
+            team3ChosenBonusName: "",
+            team4ChosenBonusName: "",
+            team1ChosenBonus: 0,
+            team2ChosenBonus: 0,
+            team3ChosenBonus: 0,
+            team4ChosenBonus: 0,
+          };
 
-            // Apply "chosen" buffs
-            [teamQuad.team1, teamQuad.team2, teamQuad.team3, teamQuad.team4].forEach((team, idx) => {
-              var buffOption = chooseBestBuffForTeam(team, buffOptions);
-              if (buffOption != undefined) {
-                teamQuad[`team${idx+1}ChosenBonusName`] = buffOption.name;
-                teamQuad[`team${idx+1}ChosenBonus`] = buffOption.bonus;
-              }
-            });
-            
-            teamQuads.push(teamQuad);
-          }
+          teamQuad.totalStrength = function() {
+            let base = this.team1.strength + this.team2.strength + this.team3.strength + this.team4.strength;
+            let slotBonus = this.team1Bonus + this.team2Bonus + this.team3Bonus + this.team4Bonus;
+            let chosenBonus = this.team1ChosenBonus + this.team2ChosenBonus + this.team3ChosenBonus + this.team4ChosenBonus;
+            return Math.round((base + slotBonus + chosenBonus) * 1000) / 1000;
+          };
+          teamQuad.minStrength = function() {
+            return Math.round(Math.min(
+              this.team1.strength + this.team1Bonus + this.team1ChosenBonus,
+              this.team2.strength + this.team2Bonus + this.team2ChosenBonus,
+              this.team3.strength + this.team3Bonus + this.team3ChosenBonus,
+              this.team4.strength + this.team4Bonus + this.team4ChosenBonus
+            ) * 1000) / 1000;
+          };
+
+          // Apply "chosen" buffs
+          [teamQuad.team1, teamQuad.team2, teamQuad.team3, teamQuad.team4].forEach((team, idx) => {
+            var buffOption = chooseBestBuffForTeam(team, buffOptions);
+            if (buffOption != undefined) {
+              teamQuad[`team${idx+1}ChosenBonusName`] = buffOption.name;
+              teamQuad[`team${idx+1}ChosenBonus`] = buffOption.bonus;
+            }
+          });
+
+          teamQuads.push(teamQuad);
         }
       }
     }
