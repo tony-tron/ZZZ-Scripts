@@ -105,6 +105,9 @@ function initCharsToBuffParams() {
         return Math.min(1, this.exSpecialFocus * uptimeSeconds / 10);
       },
       ultimateFocus : Number(charactersData[row][cols.ultimateFocus]),
+      ultimateBuffUptime: function(uptimeSeconds) {
+        return Math.min(1, this.ultimateFocus * uptimeSeconds / 60);
+      },
       ultimateEnablement : Number(charactersData[row][cols.ultimateEnablement]),
 
       hpBenefit : Number(charactersData[row][cols.hpBenefit]),
