@@ -48,7 +48,7 @@ function getSumSynergySheet() {
 
 function getSynergyBonusRange() {
   if (!_synergyBonusRange) {
-    _synergyBonusRange = getSumSynergySheet().getRange("J2");
+    _synergyBonusRange = getSumSynergySheet().getRange("D1");
   }
   return _synergyBonusRange;
 }
@@ -62,7 +62,7 @@ function getSumExtraSynergySheet() {
 
 function getExtraSynergyBonusRange() {
   if (!_extraSynergyBonusRange) {
-    _extraSynergyBonusRange = getSumExtraSynergySheet().getRange("K2");
+    _extraSynergyBonusRange = getSumExtraSynergySheet().getRange("J2");
   }
   return _extraSynergyBonusRange;
 }
@@ -87,8 +87,8 @@ function refreshAllCustomFormulas(fastRefresh = false) {
 
   const formulasInRefreshedRanges = [
     '=MAP(QUERY(Characters!A2:A, "SELECT A WHERE A IS NOT NULL"), QUERY(Characters!A2:L, "SELECT L WHERE A IS NOT NULL"), LAMBDA(char, aa_query, {char, IFERROR(TRANSPOSE(QUERY(Characters!A2:BG, "SELECT A WHERE "&QUERY_VARIABLE_NAMES_TO_COLUMNS(aa_query)&"AND NOT A=\'"&char&"\'", 0)))}))',
-    '=CALCULATE_SYNERGY_BUFFS(K2:S)',
-    '=CALCULATE_TEAM_BUFFS(F2:H)',
+    '=CALCULATE_SYNERGY_BUFFS(F2:N)',
+    '=CALCULATE_TEAM_BUFFS(F2:H, Characters!N:N)',
   ]
 
   refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges);

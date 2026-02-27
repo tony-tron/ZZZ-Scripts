@@ -109,6 +109,7 @@ function initCharactersColumns() {
     critRateBenefit : 49,
     critDamageBenefit : 50,
     energyRegenBenefit : 51,
+    etherVeilFocus : 52,
   };
   return characterColumns;
 }

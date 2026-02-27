@@ -119,6 +119,7 @@ function initCharsToBuffParams() {
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
       energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
+      etherVeilFocus : Number(charactersData[row][cols.etherVeilFocus]),
     };
 
     charsToBuffParams.set(character, buffParams);
@@ -252,6 +253,8 @@ class Team {
     this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
     this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
     this.EnergyRegenBenefit = p1.energyRegenBenefit + p2.energyRegenBenefit + p3.energyRegenBenefit;
+
+    this.EtherVeilFocus = p1.etherVeilFocus + p2.etherVeilFocus + p3.etherVeilFocus;
   }
 
   AnomalyBuffUptime(uptimeSeconds) {
