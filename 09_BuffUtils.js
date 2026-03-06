@@ -365,6 +365,8 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
 
   if (totalQualifyingDamageFocus <= 0) return;
 
+  team.TotalAnomalyDamage -= sunnaAnomalyDamage;
+
   // Remove from Source
   if (sourceAttribute == "Physical") {
     team.PhysicalAnomalyBuildup -= sunnaBuildup;
@@ -404,6 +406,8 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     // The previous implementation did `NumTarget += 1`.
     // If we split, should we add `ratio` to NumTarget?
     // Let's assume yes, to maintain the logic that "Sunna becomes this attribute".
+
+    team.TotalAnomalyDamage += sunnaAnomalyDamage * ratio;
 
     if (targetAttribute == "Physical") {
       team.PhysicalAnomalyBuildup += sunnaBuildup * ratio;
