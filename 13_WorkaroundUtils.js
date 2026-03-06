@@ -83,11 +83,13 @@ function refreshAllCustomFormulas(fastRefresh = false) {
     getExtraSynergyBonusRange(),
   ];
 
-  const formulasInRefreshedRanges = [
+  const formulasInRefreshedRanges = fastRefresh
+  ? ['=CALCULATE_TEAM_BUFFS(F2:H, Characters!N:N)']
+  : [
     '=MAP(QUERY(Characters!A2:A, "SELECT A WHERE A IS NOT NULL"), QUERY(Characters!A2:L, "SELECT L WHERE A IS NOT NULL"), LAMBDA(char, aa_query, {char, IFERROR(TRANSPOSE(QUERY(Characters!A2:BG, "SELECT A WHERE "&QUERY_VARIABLE_NAMES_TO_COLUMNS(aa_query)&"AND NOT A=\'"&char&"\'", 0)))}))',
     '=CALCULATE_SYNERGY_BUFFS(F2:N)',
     '=CALCULATE_TEAM_BUFFS(F2:H, Characters!N:N)',
-  ]
+  ];
 
   refreshFormulasForRanges(rangesToRefresh, formulasInRefreshedRanges);
 }
