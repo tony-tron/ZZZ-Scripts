@@ -189,6 +189,13 @@ class Team {
     this.ChainDamage = p1.chainAttack + p2.chainAttack + p3.chainAttack;
     this.UltimateDamage = p1.ultimate + p2.ultimate + p3.ultimate;
 
+    this.TotalAnomalyDamage = p1.anomalyDamage + p2.anomalyDamage + p3.anomalyDamage;
+    this.PhysicalAnomalyDamage = p1.physicalAnomalyDamage + p2.physicalAnomalyDamage + p3.physicalAnomalyDamage;
+    this.EtherAnomalyDamage = p1.etherAnomalyDamage + p2.etherAnomalyDamage + p3.etherAnomalyDamage;
+    this.FireAnomalyDamage = p1.fireAnomalyDamage + p2.fireAnomalyDamage + p3.fireAnomalyDamage;
+    this.IceAnomalyDamage = p1.iceAnomalyDamage + p2.iceAnomalyDamage + p3.iceAnomalyDamage;
+    this.ElectricAnomalyDamage = p1.electricAnomalyDamage + p2.electricAnomalyDamage + p3.electricAnomalyDamage;
+
     _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
     _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
 
@@ -221,13 +228,6 @@ class Team {
       + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
       / 4;
     if (this.DisorderFocus < 1) this.DisorderFocus = 0;
-
-    this.TotalAnomalyDamage = p1.anomalyDamage + p2.anomalyDamage + p3.anomalyDamage;
-    this.PhysicalAnomalyDamage = p1.physicalAnomalyDamage + p2.physicalAnomalyDamage + p3.physicalAnomalyDamage;
-    this.EtherAnomalyDamage = p1.etherAnomalyDamage + p2.etherAnomalyDamage + p3.etherAnomalyDamage;
-    this.FireAnomalyDamage = p1.fireAnomalyDamage + p2.fireAnomalyDamage + p3.fireAnomalyDamage;
-    this.IceAnomalyDamage = p1.iceAnomalyDamage + p2.iceAnomalyDamage + p3.iceAnomalyDamage;
-    this.ElectricAnomalyDamage = p1.electricAnomalyDamage + p2.electricAnomalyDamage + p3.electricAnomalyDamage;
 
     this.ShieldFocus = p1.shieldFocus + p2.shieldFocus + p3.shieldFocus;
     this.HealingFocus = p1.healingFocus + p2.healingFocus + p3.healingFocus;
@@ -346,30 +346,8 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
 
   var sunnaBuildup = sunnaParams.anomalyBuildup;
   var sunnaDamage = sunnaParams.damageFocus;
+  var sunnaAnomalyDamage = sunnaParams.anomalyDamage;
   var sourceAttribute = sunnaParams.attribute;
-
-  // Remove from Source
-  if (sourceAttribute == "Physical") {
-    team.PhysicalAnomalyBuildup -= sunnaBuildup;
-    team.PhysicalDamage -= sunnaDamage;
-    team.NumPhysical -= 1;
-  } else if (sourceAttribute == "Ether") {
-    team.EtherAnomalyBuildup -= sunnaBuildup;
-    team.EtherDamage -= sunnaDamage;
-    team.NumEther -= 1;
-  } else if (sourceAttribute == "Fire") {
-    team.FireAnomalyBuildup -= sunnaBuildup;
-    team.FireDamage -= sunnaDamage;
-    team.NumFire -= 1;
-  } else if (sourceAttribute == "Ice") {
-    team.IceAnomalyBuildup -= sunnaBuildup;
-    team.IceDamage -= sunnaDamage;
-    team.NumIce -= 1;
-  } else if (sourceAttribute == "Electric") {
-    team.ElectricAnomalyBuildup -= sunnaBuildup;
-    team.ElectricDamage -= sunnaDamage;
-    team.NumElectric -= 1;
-  }
 
   // Calculate qualifying damage focus for proportional split
   var totalQualifyingDamageFocus = 0;
@@ -387,6 +365,34 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
 
   if (totalQualifyingDamageFocus <= 0) return;
 
+  // Remove from Source
+  if (sourceAttribute == "Physical") {
+    team.PhysicalAnomalyBuildup -= sunnaBuildup;
+    team.PhysicalDamage -= sunnaDamage;
+    team.PhysicalAnomalyDamage -= sunnaAnomalyDamage;
+    team.NumPhysical -= 1;
+  } else if (sourceAttribute == "Ether") {
+    team.EtherAnomalyBuildup -= sunnaBuildup;
+    team.EtherDamage -= sunnaDamage;
+    team.EtherAnomalyDamage -= sunnaAnomalyDamage;
+    team.NumEther -= 1;
+  } else if (sourceAttribute == "Fire") {
+    team.FireAnomalyBuildup -= sunnaBuildup;
+    team.FireDamage -= sunnaDamage;
+    team.FireAnomalyDamage -= sunnaAnomalyDamage;
+    team.NumFire -= 1;
+  } else if (sourceAttribute == "Ice") {
+    team.IceAnomalyBuildup -= sunnaBuildup;
+    team.IceDamage -= sunnaDamage;
+    team.IceAnomalyDamage -= sunnaAnomalyDamage;
+    team.NumIce -= 1;
+  } else if (sourceAttribute == "Electric") {
+    team.ElectricAnomalyBuildup -= sunnaBuildup;
+    team.ElectricDamage -= sunnaDamage;
+    team.ElectricAnomalyDamage -= sunnaAnomalyDamage;
+    team.NumElectric -= 1;
+  }
+
   // Add to Targets proportionally
   qualifyingTeammates.forEach(function(item) {
     var ratio = item.weight / totalQualifyingDamageFocus;
@@ -402,22 +408,27 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     if (targetAttribute == "Physical") {
       team.PhysicalAnomalyBuildup += sunnaBuildup * ratio;
       team.PhysicalDamage += sunnaDamage * ratio;
+      team.PhysicalAnomalyDamage += sunnaAnomalyDamage * ratio;
       team.NumPhysical += ratio;
     } else if (targetAttribute == "Ether") {
       team.EtherAnomalyBuildup += sunnaBuildup * ratio;
       team.EtherDamage += sunnaDamage * ratio;
+      team.EtherAnomalyDamage += sunnaAnomalyDamage * ratio;
       team.NumEther += ratio;
     } else if (targetAttribute == "Fire") {
       team.FireAnomalyBuildup += sunnaBuildup * ratio;
       team.FireDamage += sunnaDamage * ratio;
+      team.FireAnomalyDamage += sunnaAnomalyDamage * ratio;
       team.NumFire += ratio;
     } else if (targetAttribute == "Ice") {
       team.IceAnomalyBuildup += sunnaBuildup * ratio;
       team.IceDamage += sunnaDamage * ratio;
+      team.IceAnomalyDamage += sunnaAnomalyDamage * ratio;
       team.NumIce += ratio;
     } else if (targetAttribute == "Electric") {
       team.ElectricAnomalyBuildup += sunnaBuildup * ratio;
       team.ElectricDamage += sunnaDamage * ratio;
+      team.ElectricAnomalyDamage += sunnaAnomalyDamage * ratio;
       team.NumElectric += ratio;
     }
   });
