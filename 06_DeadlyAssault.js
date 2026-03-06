@@ -133,11 +133,10 @@ function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, sheet, startRow, sta
     var team1 = teamTriple.team1;
     var team2 = teamTriple.team2;
     var team3 = teamTriple.team3;
-    var strengthString =
-      team1.strength + " + " + teamTriple.team1Bonus + " + " + teamTriple.team1ChosenBonus + "\n+ " +
-      team2.strength + " + " + teamTriple.team2Bonus + " + " + teamTriple.team2ChosenBonus + "\n+ " +
-      team3.strength + " + " + teamTriple.team3Bonus + " + " + teamTriple.team3ChosenBonus + "\n= " +
-      teamTriple.totalStrength() + " (min= " + teamTriple.minStrength() + ")";
+    var strengthString = `${team1.strength} + ${teamTriple.team1Bonus} + ${teamTriple.team1ChosenBonus}
++ ${team2.strength} + ${teamTriple.team2Bonus} + ${teamTriple.team2ChosenBonus}
++ ${team3.strength} + ${teamTriple.team3Bonus} + ${teamTriple.team3ChosenBonus}
+= ${teamTriple.totalStrength()} (min= ${teamTriple.minStrength()})`;
     sheet.getRange(startRow + i * 4, startColumn, 1, 3)
       .setValues([team1.characters]);
     sheet.getRange(startRow + 1 + i * 4, startColumn, 1, 3)
