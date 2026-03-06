@@ -13,7 +13,7 @@ function getCharsToBuffParams() {
 // Keys are the formula strings, values are the executable functions.
 const formulaCache = {};
 
-// Initializes all of the params per character (aggregating for the team is done in addBuffParamsToTeam).
+// Initializes all of the params per character (aggregating for the team is done during Team instantiation).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
   const charactersData = getCharactersDataRange().getValues();
@@ -662,7 +662,7 @@ function getTeamOrCreateSafe(char1, char2, char3) {
   }
 
   // Verify characters exist.
-  // Note: char2/char3 might be empty strings if not provided, but addBuffParamsToTeam requires valid params.
+  // Note: char2/char3 might be empty strings if not provided, but Team instantiation requires valid params.
   const params = getCharsToBuffParams();
   if (params.has(char1) &&
       params.has(char2) &&
