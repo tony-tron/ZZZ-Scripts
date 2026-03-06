@@ -1,7 +1,5 @@
 /** @OnlyCurrentDoc */
 
-// Removed global constants. Fetched dynamically.
-
 var _readmeSheet;
 var _latestVersionRange;
 var _extraSynergySheet;
