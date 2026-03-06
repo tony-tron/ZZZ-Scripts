@@ -128,7 +128,11 @@ function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, sheet, startRow, sta
   if (teamTriples.length == 0) {
     sheet.getRange(startRow, startColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
   }
-  for (var i = 0; i < teamTriples.length && i < maxOptions; i++) {
+
+  var outputValues = [];
+  var limit = Math.min(teamTriples.length, maxOptions);
+
+  for (var i = 0; i < limit; i++) {
     var teamTriple = teamTriples[i];
     var team1 = teamTriple.team1;
     var team2 = teamTriple.team2;
@@ -138,16 +142,32 @@ function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, sheet, startRow, sta
       team2.strength + " + " + teamTriple.team2Bonus + " + " + teamTriple.team2ChosenBonus + "\n+ " +
       team3.strength + " + " + teamTriple.team3Bonus + " + " + teamTriple.team3ChosenBonus + "\n= " +
       teamTriple.totalStrength() + " (min= " + teamTriple.minStrength() + ")";
-    sheet.getRange(startRow + i * 4, startColumn, 1, 3)
-      .setValues([team1.characters]);
-    sheet.getRange(startRow + 1 + i * 4, startColumn, 1, 3)
-      .setValues([team2.characters]);
-    sheet.getRange(startRow + 2 + i * 4, startColumn, 1, 3)
-      .setValues([team3.characters]);
-    sheet.getRange(startRow + i * 4, startColumn + 3, 3, 1)
-      .setValue(strengthString).setVerticalAlignment('middle').setHorizontalAlignment('center').mergeVertically();
-    sheet.getRange(startRow + i * 4, startColumn + 4, 3, 1)
-      .setValues([[teamTriple.team1ChosenBonusName], [teamTriple.team2ChosenBonusName], [teamTriple.team3ChosenBonusName]])
+
+    outputValues.push([...team1.characters, strengthString, teamTriple.team1ChosenBonusName]);
+    outputValues.push([...team2.characters, "", teamTriple.team2ChosenBonusName]);
+    outputValues.push([...team3.characters, "", teamTriple.team3ChosenBonusName]);
+    outputValues.push(["", "", "", "", ""]);
+  }
+
+  if (outputValues.length > 0) {
+    sheet.getRange(startRow, startColumn, outputValues.length, 5).setValues(outputValues);
+
+    var strengthColIndex = startColumn + 3;
+    sheet.getRange(startRow, strengthColIndex, outputValues.length, 1)
+      .setVerticalAlignment('middle')
       .setHorizontalAlignment('center');
+
+    // Optimization: Batch merge operations to avoid loop overhead
+    sheet.getRange(startRow, strengthColIndex, 3, 1).mergeVertically();
+
+    var bonusColIndex = startColumn + 4;
+    sheet.getRange(startRow, bonusColIndex, outputValues.length, 1)
+      .setHorizontalAlignment('center');
+
+    if (limit > 1) {
+      var templateRange = sheet.getRange(startRow, strengthColIndex, 4, 1);
+      var targetRange = sheet.getRange(startRow + 4, strengthColIndex, (limit - 1) * 4, 1);
+      templateRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+    }
   }
 }
