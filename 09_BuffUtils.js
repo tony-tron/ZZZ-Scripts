@@ -136,11 +136,19 @@ class Team {
 
   initStats() {
     const paramsMap = getCharsToBuffParams();
-    const p1 = paramsMap.get(this.characters[0]);
-    const p2 = paramsMap.get(this.characters[1]);
-    const p3 = paramsMap.get(this.characters[2]);
+    const globalP1 = paramsMap.get(this.characters[0]);
+    const globalP2 = paramsMap.get(this.characters[1]);
+    const globalP3 = paramsMap.get(this.characters[2]);
 
-    if (!p1 || !p2 || !p3) return;
+    if (!globalP1 || !globalP2 || !globalP3) return;
+
+    this.p1 = Object.assign({}, globalP1);
+    this.p2 = Object.assign({}, globalP2);
+    this.p3 = Object.assign({}, globalP3);
+
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
 
     this.NumSupport = p1.support + p2.support + p3.support;
     this.NumStun = p1.stun + p2.stun + p3.stun;
@@ -281,10 +289,9 @@ class Team {
     }
 
     const fn = formulaCache[calcExpression];
-    const params = getCharsToBuffParams();
-    const p1 = params.get(this.characters[0]);
-    const p2 = params.get(this.characters[1]);
-    const p3 = params.get(this.characters[2]);
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
 
     return fn(p1) + fn(p2) + fn(p3);
   }
@@ -294,10 +301,9 @@ class Team {
     
     var total = 0;
     
-    const params = getCharsToBuffParams();
-    const p1 = params.get(this.characters[0]);
-    const p2 = params.get(this.characters[1]);
-    const p3 = params.get(this.characters[2]);
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
 
     function addForChar(p) {
       if (attributes.toLowerCase().includes(p.attribute.toLowerCase())) {
@@ -369,22 +375,37 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     team.PhysicalAnomalyBuildup -= sunnaBuildup;
     team.PhysicalDamage -= sunnaDamage;
     team.NumPhysical -= 1;
+    sunnaParams.physical = 0;
+    sunnaParams.physicalAnomalyBuildup = 0;
+    sunnaParams.physicalDamage = 0;
   } else if (sourceAttribute == "Ether") {
     team.EtherAnomalyBuildup -= sunnaBuildup;
     team.EtherDamage -= sunnaDamage;
     team.NumEther -= 1;
+    sunnaParams.ether = 0;
+    sunnaParams.etherAnomalyBuildup = 0;
+    sunnaParams.etherDamage = 0;
   } else if (sourceAttribute == "Fire") {
     team.FireAnomalyBuildup -= sunnaBuildup;
     team.FireDamage -= sunnaDamage;
     team.NumFire -= 1;
+    sunnaParams.fire = 0;
+    sunnaParams.fireAnomalyBuildup = 0;
+    sunnaParams.fireDamage = 0;
   } else if (sourceAttribute == "Ice") {
     team.IceAnomalyBuildup -= sunnaBuildup;
     team.IceDamage -= sunnaDamage;
     team.NumIce -= 1;
+    sunnaParams.ice = 0;
+    sunnaParams.iceAnomalyBuildup = 0;
+    sunnaParams.iceDamage = 0;
   } else if (sourceAttribute == "Electric") {
     team.ElectricAnomalyBuildup -= sunnaBuildup;
     team.ElectricDamage -= sunnaDamage;
     team.NumElectric -= 1;
+    sunnaParams.electric = 0;
+    sunnaParams.electricAnomalyBuildup = 0;
+    sunnaParams.electricDamage = 0;
   }
 
   // Add to Targets proportionally
@@ -406,40 +427,60 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
       if (isAnomaly) {
         team.PhysicalAnomalyDamage += sunnaDamage * ratio;
         team.TotalAnomalyDamage += sunnaDamage * ratio;
+        sunnaParams.physicalAnomalyDamage = (sunnaParams.physicalAnomalyDamage || 0) + sunnaDamage * ratio;
       }
       team.NumPhysical += ratio;
+      sunnaParams.physical = (sunnaParams.physical || 0) + ratio;
+      sunnaParams.physicalAnomalyBuildup = (sunnaParams.physicalAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.physicalDamage = (sunnaParams.physicalDamage || 0) + sunnaDamage * ratio;
     } else if (targetAttribute == "Ether") {
       team.EtherAnomalyBuildup += sunnaBuildup * ratio;
       team.EtherDamage += sunnaDamage * ratio;
       if (isAnomaly) {
         team.EtherAnomalyDamage += sunnaDamage * ratio;
         team.TotalAnomalyDamage += sunnaDamage * ratio;
+        sunnaParams.etherAnomalyDamage = (sunnaParams.etherAnomalyDamage || 0) + sunnaDamage * ratio;
       }
       team.NumEther += ratio;
+      sunnaParams.ether = (sunnaParams.ether || 0) + ratio;
+      sunnaParams.etherAnomalyBuildup = (sunnaParams.etherAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.etherDamage = (sunnaParams.etherDamage || 0) + sunnaDamage * ratio;
     } else if (targetAttribute == "Fire") {
       team.FireAnomalyBuildup += sunnaBuildup * ratio;
       team.FireDamage += sunnaDamage * ratio;
       if (isAnomaly) {
         team.FireAnomalyDamage += sunnaDamage * ratio;
         team.TotalAnomalyDamage += sunnaDamage * ratio;
+        sunnaParams.fireAnomalyDamage = (sunnaParams.fireAnomalyDamage || 0) + sunnaDamage * ratio;
       }
       team.NumFire += ratio;
+      sunnaParams.fire = (sunnaParams.fire || 0) + ratio;
+      sunnaParams.fireAnomalyBuildup = (sunnaParams.fireAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.fireDamage = (sunnaParams.fireDamage || 0) + sunnaDamage * ratio;
     } else if (targetAttribute == "Ice") {
       team.IceAnomalyBuildup += sunnaBuildup * ratio;
       team.IceDamage += sunnaDamage * ratio;
       if (isAnomaly) {
         team.IceAnomalyDamage += sunnaDamage * ratio;
         team.TotalAnomalyDamage += sunnaDamage * ratio;
+        sunnaParams.iceAnomalyDamage = (sunnaParams.iceAnomalyDamage || 0) + sunnaDamage * ratio;
       }
       team.NumIce += ratio;
+      sunnaParams.ice = (sunnaParams.ice || 0) + ratio;
+      sunnaParams.iceAnomalyBuildup = (sunnaParams.iceAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.iceDamage = (sunnaParams.iceDamage || 0) + sunnaDamage * ratio;
     } else if (targetAttribute == "Electric") {
       team.ElectricAnomalyBuildup += sunnaBuildup * ratio;
       team.ElectricDamage += sunnaDamage * ratio;
       if (isAnomaly) {
         team.ElectricAnomalyDamage += sunnaDamage * ratio;
         team.TotalAnomalyDamage += sunnaDamage * ratio;
+        sunnaParams.electricAnomalyDamage = (sunnaParams.electricAnomalyDamage || 0) + sunnaDamage * ratio;
       }
       team.NumElectric += ratio;
+      sunnaParams.electric = (sunnaParams.electric || 0) + ratio;
+      sunnaParams.electricAnomalyBuildup = (sunnaParams.electricAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.electricDamage = (sunnaParams.electricDamage || 0) + sunnaDamage * ratio;
     }
   });
 }
@@ -448,15 +489,19 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   // Yuzuha matches the attributes applied by the other characters.
   var yuzuhaBuildup = 0;
   var yuzuhaDamage = 0;
+  var yuzuhaParams = null;
   if (char1 == "Yuzuha") {
     yuzuhaBuildup = char1Params.physicalAnomalyBuildup;
     yuzuhaDamage = char1Params.physicalDamage;
+    yuzuhaParams = char1Params;
   } else if (char2 == "Yuzuha") {
     yuzuhaBuildup = char2Params.physicalAnomalyBuildup;
     yuzuhaDamage = char2Params.physicalDamage;
+    yuzuhaParams = char2Params;
   } else if (char3 == "Yuzuha") {
     yuzuhaBuildup = char3Params.physicalAnomalyBuildup;
     yuzuhaDamage = char3Params.physicalDamage;
+    yuzuhaParams = char3Params;
   }
 
   if (yuzuhaBuildup == 0) return;
@@ -475,12 +520,38 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   team.IceDamage += team.NumIce * yuzuhaDamage * 0.5;
   team.ElectricDamage += team.NumElectric * yuzuhaDamage * 0.5;
 
+  const yuzuhaPhysical = (team.NumPhysical - 1) * 0.5;
+  const yuzuhaEther = team.NumEther * 0.5;
+  const yuzuhaFire = team.NumFire * 0.5;
+  const yuzuhaIce = team.NumIce * 0.5;
+  const yuzuhaElectric = team.NumElectric * 0.5;
+
   team.NumPhysical -= 1;
   team.NumPhysical *= 1.5;
   team.NumEther *= 1.5;
   team.NumFire *= 1.5;
   team.NumIce *= 1.5;
   team.NumElectric *= 1.5;
+
+  if (yuzuhaParams) {
+    yuzuhaParams.physicalAnomalyBuildup = yuzuhaPhysical * yuzuhaBuildup;
+    yuzuhaParams.etherAnomalyBuildup = yuzuhaEther * yuzuhaBuildup;
+    yuzuhaParams.fireAnomalyBuildup = yuzuhaFire * yuzuhaBuildup;
+    yuzuhaParams.iceAnomalyBuildup = yuzuhaIce * yuzuhaBuildup;
+    yuzuhaParams.electricAnomalyBuildup = yuzuhaElectric * yuzuhaBuildup;
+
+    yuzuhaParams.physicalDamage = yuzuhaPhysical * yuzuhaDamage;
+    yuzuhaParams.etherDamage = yuzuhaEther * yuzuhaDamage;
+    yuzuhaParams.fireDamage = yuzuhaFire * yuzuhaDamage;
+    yuzuhaParams.iceDamage = yuzuhaIce * yuzuhaDamage;
+    yuzuhaParams.electricDamage = yuzuhaElectric * yuzuhaDamage;
+
+    yuzuhaParams.physical = yuzuhaPhysical;
+    yuzuhaParams.ether = yuzuhaEther;
+    yuzuhaParams.fire = yuzuhaFire;
+    yuzuhaParams.ice = yuzuhaIce;
+    yuzuhaParams.electric = yuzuhaElectric;
+  }
 }
 
 /**
