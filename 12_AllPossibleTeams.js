@@ -86,12 +86,20 @@ function SUPPORTED_TEAM_PROPERTIES() {
       properties.push([property, "Parameter: uptimeSeconds"]);
       continue;
     }
+    if (property === "DisorderBuffUptime") {
+      properties.push([property, "Parameter: uptimeSeconds"]);
+      continue;
+    }
+    if (property === "EXSpecialBuffUptime") {
+      properties.push([property, "Parameter: uptimeSeconds"]);
+      continue;
+    }
     if (property === "UltimateBuffUptime") {
       properties.push([property, "Parameter: uptimeSeconds"]);
       continue;
     }
-    if (property === "StunDamageMultiplier") {
-      properties.push([property, "Function"]);
+    if (property === "StunBuffUptime") {
+      properties.push([property, "Parameter: uptimeSeconds"]);
       continue;
     }
     if (property === "PerChar") {

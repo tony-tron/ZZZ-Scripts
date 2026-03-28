@@ -285,6 +285,10 @@ class Team {
     return Math.min(1, (this.TotalAnomaly || 0) * uptimeSeconds / 60);
   }
 
+  DisorderBuffUptime(uptimeSeconds) {
+    return Math.min(1, this.DisorderFocus * uptimeSeconds / 15);
+  }
+
   EXSpecialBuffUptime(uptimeSeconds) {
       return Math.min(1, this.EXSpecialFocus * uptimeSeconds / 10);
   }
@@ -293,8 +297,16 @@ class Team {
       return Math.min(1, this.UltimateFocus * uptimeSeconds / 60);
   }
 
-  StunDamageMultiplier(multiplier) {
+  StunBuffUptime(uptimeSeconds) {
+    return Math.min(1, this.StunBuildup * uptimeSeconds / 60);
+  }
+
+  StunDamageMultiplierOutsideWindow(multiplier) {
     return this.PerChar('(name=="Ye Shunguang" ? 1 : ' + (this.StunBuildup*0.1) + ') * damageFocus * ' + multiplier);
+  }
+
+  StunDamageMultiplier(multiplier) {
+    return this.StunBuildup*0.1*this.TotalDamageFocus*multiplier;
   }
 
   PerChar(calcExpression) {
