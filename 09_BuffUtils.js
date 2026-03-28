@@ -207,14 +207,21 @@ class Team {
     _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
     _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
 
-    const physicalAnomaly = this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0;
-    const honedEdgeAnomaly = this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0;
-    const etherAnomaly = this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0;
-    const fireAnomaly = this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0;
-    const iceAnomaly = this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0;
-    const frostAnomaly = this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0;
-    const electricAnomaly = this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0;
-    const totalAnomaly =
+    const hasPhysicalAnomaly = this.PhysicalAnomalyBuildup >= 2;
+    const hasHonedEdgeAnomaly = this.HonedEdgeAnomalyBuildup >= 2;
+    const hasEtherAnomaly = this.EtherAnomalyBuildup >= 2;
+    const hasFireAnomaly = this.FireAnomalyBuildup >= 2;
+    const hasIceAnomaly = this.IceAnomalyBuildup >= 2;
+    const hasFrostAnomaly = this.FrostAnomalyBuildup >= 2;
+    const hasElectricAnomaly = this.ElectricAnomalyBuildup >= 2;
+    const physicalAnomaly = hasPhysicalAnomaly ? this.PhysicalAnomalyBuildup : 0;
+    const honedEdgeAnomaly = hasHonedEdgeAnomaly ? this.HonedEdgeAnomalyBuildup : 0;
+    const etherAnomaly = hasEtherAnomaly ? this.EtherAnomalyBuildup : 0;
+    const fireAnomaly = hasFireAnomaly ? this.FireAnomalyBuildup : 0;
+    const iceAnomaly = hasIceAnomaly ? this.IceAnomalyBuildup : 0;
+    const frostAnomaly = hasFrostAnomaly ? this.FrostAnomalyBuildup : 0;
+    const electricAnomaly = hasElectricAnomaly ? this.ElectricAnomalyBuildup : 0;
+    this.TotalAnomaly =
         physicalAnomaly
       + honedEdgeAnomaly
       + etherAnomaly
@@ -222,9 +229,14 @@ class Team {
       + iceAnomaly
       + frostAnomaly
       + electricAnomaly;
+    const numAnomalyAttributes = hasPhysicalAnomaly + hasHonedEdgeAnomaly + hasEtherAnomaly + hasFireAnomaly + hasIceAnomaly + hasFrostAnomaly + hasElectricAnomaly;
 
-    this.HasAttributeAnomaly = totalAnomaly > 0;
-    this.totalAnomaly = totalAnomaly;
+    this.HasAttributeAnomaly = numAnomalyAttributes > 0;
+    const hasDisorder = numAnomalyAttributes > 1;
+    const numPolarDisorders =
+      p1.tags.includes("PolarDisorder")
+      + p2.tags.includes("PolarDisorder")
+      + p3.tags.includes("PolarDisorder");
 
     this.DisorderFocus =
         ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
@@ -235,7 +247,11 @@ class Team {
       + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
       + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
       / 4;
-    if (this.DisorderFocus < 1) this.DisorderFocus = 0;
+    if (this.DisorderFocus < 1 || !hasDisorder) {
+      this.DisorderFocus *= 0.25 * numPolarDisorders;
+    } else {
+      this.DisorderFocus += 0.25 * numPolarDisorders;
+    }
 
     this.ShieldFocus = p1.shieldFocus + p2.shieldFocus + p3.shieldFocus;
     this.HealingFocus = p1.healingFocus + p2.healingFocus + p3.healingFocus;
@@ -266,7 +282,7 @@ class Team {
   }
 
   AnomalyBuffUptime(uptimeSeconds) {
-    return Math.min(1, (this.totalAnomaly || 0) * uptimeSeconds / 60);
+    return Math.min(1, (this.TotalAnomaly || 0) * uptimeSeconds / 60);
   }
 
   EXSpecialBuffUptime(uptimeSeconds) {
