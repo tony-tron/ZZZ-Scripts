@@ -102,7 +102,8 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
   const maxShiyuDefenseFrontier5Options = sheet.getRange(maxShiyuDefenseFrontier5OptionsRange).getValue();
 
   if (teamTriples.length == 0) {
-    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
+    return;
   }
 
   var outputValues = [];
