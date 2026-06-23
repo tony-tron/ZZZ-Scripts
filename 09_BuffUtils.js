@@ -238,10 +238,11 @@ class Team {
       + fireAnomaly
       + iceAnomaly
       + frostAnomaly
-      + electricAnomaly;
+      + electricAnomaly
+      + windAnomaly;
     const numAnomalyAttributes = hasPhysicalAnomaly + hasHonedEdgeAnomaly + hasEtherAnomaly + hasFireAnomaly + hasIceAnomaly + hasFrostAnomaly + hasElectricAnomaly;
 
-    this.HasAttributeAnomaly = numAnomalyAttributes > 0;
+    this.HasAttributeAnomaly = numAnomalyAttributes > 0 || hasWindAnomaly;
     const hasDisorder = numAnomalyAttributes > 1;
     const numPolarDisorders =
       p1.tags.includes("PolarDisorder")
