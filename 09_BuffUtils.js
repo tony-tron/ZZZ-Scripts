@@ -418,8 +418,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
 
   if (totalQualifyingDamageFocus <= 0) return;
 
-  team.TotalAnomalyDamage -= sunnaAnomalyDamage;
-
   // Remove from Source
   if (sourceAttribute == "Physical") {
     team.PhysicalAnomalyBuildup -= sunnaBuildup;
@@ -428,7 +426,9 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     sunnaParams.physical = 0;
     sunnaParams.physicalAnomalyBuildup = 0;
     sunnaParams.physicalDamage = 0;
-  } else if (sourceAttribute == "Ether") {
+  } 
+    // NOTE: The rest of these cases are probably dead code since Sunna is Physical?
+    else if (sourceAttribute == "Ether") {
     team.EtherAnomalyBuildup -= sunnaBuildup;
     team.EtherDamage -= sunnaDamage;
     team.NumEther -= 1;
@@ -469,7 +469,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
   qualifyingTeammates.forEach(function(item) {
     var ratio = item.weight / totalQualifyingDamageFocus;
     var targetAttribute = item.params.attribute;
-    var isAnomaly = item.params.anomaly == 1;
 
     // We only add fractional counts for attributes if we want to represent "partial" presence,
     // but typically NumAttribute is an integer count of characters.
@@ -478,16 +477,9 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     // If we split, should we add `ratio` to NumTarget?
     // Let's assume yes, to maintain the logic that "Sunna becomes this attribute".
 
-    team.TotalAnomalyDamage += sunnaAnomalyDamage * ratio;
-
     if (targetAttribute == "Physical") {
       team.PhysicalAnomalyBuildup += sunnaBuildup * ratio;
       team.PhysicalDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.PhysicalAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.physicalAnomalyDamage = (sunnaParams.physicalAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumPhysical += ratio;
       sunnaParams.physical = (sunnaParams.physical || 0) + ratio;
       sunnaParams.physicalAnomalyBuildup = (sunnaParams.physicalAnomalyBuildup || 0) + sunnaBuildup * ratio;
@@ -495,11 +487,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     } else if (targetAttribute == "Ether") {
       team.EtherAnomalyBuildup += sunnaBuildup * ratio;
       team.EtherDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.EtherAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.etherAnomalyDamage = (sunnaParams.etherAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumEther += ratio;
       sunnaParams.ether = (sunnaParams.ether || 0) + ratio;
       sunnaParams.etherAnomalyBuildup = (sunnaParams.etherAnomalyBuildup || 0) + sunnaBuildup * ratio;
@@ -507,11 +494,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     } else if (targetAttribute == "Fire") {
       team.FireAnomalyBuildup += sunnaBuildup * ratio;
       team.FireDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.FireAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.fireAnomalyDamage = (sunnaParams.fireAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumFire += ratio;
       sunnaParams.fire = (sunnaParams.fire || 0) + ratio;
       sunnaParams.fireAnomalyBuildup = (sunnaParams.fireAnomalyBuildup || 0) + sunnaBuildup * ratio;
@@ -519,11 +501,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     } else if (targetAttribute == "Ice") {
       team.IceAnomalyBuildup += sunnaBuildup * ratio;
       team.IceDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.IceAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.iceAnomalyDamage = (sunnaParams.iceAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumIce += ratio;
       sunnaParams.ice = (sunnaParams.ice || 0) + ratio;
       sunnaParams.iceAnomalyBuildup = (sunnaParams.iceAnomalyBuildup || 0) + sunnaBuildup * ratio;
@@ -531,11 +508,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     } else if (targetAttribute == "Electric") {
       team.ElectricAnomalyBuildup += sunnaBuildup * ratio;
       team.ElectricDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.ElectricAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.electricAnomalyDamage = (sunnaParams.electricAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumElectric += ratio;
       sunnaParams.electric = (sunnaParams.electric || 0) + ratio;
       sunnaParams.electricAnomalyBuildup = (sunnaParams.electricAnomalyBuildup || 0) + sunnaBuildup * ratio;
@@ -543,11 +515,6 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     } else if (targetAttribute == "Wind") {
       team.WindAnomalyBuildup += sunnaBuildup * ratio;
       team.WindDamage += sunnaDamage * ratio;
-      if (isAnomaly) {
-        team.WindAnomalyDamage += sunnaDamage * ratio;
-        team.TotalAnomalyDamage += sunnaDamage * ratio;
-        sunnaParams.windAnomalyDamage = (sunnaParams.windAnomalyDamage || 0) + sunnaDamage * ratio;
-      }
       team.NumWind += ratio;
       sunnaParams.wind = (sunnaParams.wind || 0) + ratio;
       sunnaParams.windAnomalyBuildup = (sunnaParams.windAnomalyBuildup || 0) + sunnaBuildup * ratio;
