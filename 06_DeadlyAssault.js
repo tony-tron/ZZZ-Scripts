@@ -115,7 +115,7 @@ function updateDeadlyAssaultSheet() {
   clearDeadlyAssaultTeams(ctx.distinctTeamsRange);
   const allTeams = getAllTeams(ctx.minStrength);
   const teamTriples = computeBestDistinctTeamTriples(allTeams, team1BuffExpressions, team2BuffExpressions, team3BuffExpressions, buffOptions);
-  const sortedTriples = teamTriples.sort((triple1, triple2) => triple2.minStrength() - triple1.minStrength() || triple2.totalStrength() - triple1.totalStrength());
+  const sortedTriples = teamTriples.sort((triple1, triple2) => (triple2.minStrength() - triple1.minStrength()) * 0.5 + (triple2.totalStrength()/3 - triple1.totalStrength()/3) * 0.5);
   updateDeadlyAssaultDistinctTeamsSheet(sortedTriples, ctx.sheet, ctx.startRow, ctx.startColumn, ctx.maxOptions);
 }
 
@@ -137,7 +137,7 @@ function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, sheet, startRow, sta
     const team1 = teamTriple.team1;
     const team2 = teamTriple.team2;
     const team3 = teamTriple.team3;
-    const strengthString = `${team1.strength} + ${teamTriple.team1Bonus} + ${teamTriple.team1ChosenBonus}\n+ ${team2.strength} + ${teamTriple.team2Bonus} + ${teamTriple.team2ChosenBonus}\n+ ${team3.strength} + ${teamTriple.team3Bonus} + ${teamTriple.team3ChosenBonus}\n= ${teamTriple.totalStrength()} (min= ${teamTriple.minStrength()})`;
+    const strengthString = `${team1.strength} + ${teamTriple.team1Bonus} + ${teamTriple.team1ChosenBonus}\n+ ${team2.strength} + ${teamTriple.team2Bonus} + ${teamTriple.team2ChosenBonus}\n+ ${team3.strength} + ${teamTriple.team3Bonus} + ${teamTriple.team3ChosenBonus}\n= ${teamTriple.totalStrength()} (min=${teamTriple.minStrength()})`;
 
     data.push([team1.characters[0], team1.characters[1], team1.characters[2], strengthString, teamTriple.team1ChosenBonusName || '']);
     data.push([team2.characters[0], team2.characters[1], team2.characters[2], '', teamTriple.team2ChosenBonusName || '']);

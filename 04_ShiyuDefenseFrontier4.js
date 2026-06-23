@@ -75,7 +75,7 @@ function updateShiyuDefenseFrontier4Sheet() {
   clearShiyuDefenseFrontier4Teams(ctx.distinctTeamsRange);
   const allTeams = getAllTeams(ctx.minStrength);
   const teamPairs = computeBestDistinctTeamPairs(allTeams, team1Buffs, team2Buffs);
-  const sortedPairs = teamPairs.sort((pair1, pair2) => pair2.minStrength() - pair1.minStrength() || pair2.totalStrength() - pair1.totalStrength());
+  const sortedPairs = teamPairs.sort((pair1, pair2) => (pair2.totalStrength()/2 - pair1.totalStrength()/2) * 0.5 + (pair2.minStrength() - pair1.minStrength()) * 0.5);
   updateShiyuDefenseFrontier4DistinctTeamsSheet(sortedPairs, ctx.sheet, ctx.startRow, ctx.startColumn, ctx.maxOptions);
 }
 

@@ -31,6 +31,7 @@ function initCharsToBuffParams() {
     const damageFocus = Number(charactersData[row][cols.damageFocus]);
     const anomalyDamage = Number(charactersData[row][cols.anomalyDamage]);
     const aftershockFocus = Number(charactersData[row][cols.aftershockFocus]);
+    const abloomFocus = Number(charactersData[row][cols.abloomFocus]);
 
     const buffParams = {
       name : character,
@@ -124,6 +125,8 @@ function initCharsToBuffParams() {
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
       energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
       etherVeilFocus : Number(charactersData[row][cols.etherVeilFocus]),
+      abloomFocus : abloomFocus,
+      abloomDamage : abloomFocus * damageFocus,
     };
 
     charsToBuffParams.set(character, buffParams);
@@ -276,6 +279,8 @@ class Team {
     this.EXSpecialFocus = p1.exSpecialFocus + p2.exSpecialFocus + p3.exSpecialFocus;
     this.HasAftershock = this.AftershockFocus > 0;
     this.AftershockDamage = p1.aftershockDamage + p2.aftershockDamage + p3.aftershockDamage;
+    this.AbloomFocus = p1.abloomFocus + p2.abloomFocus + p3.abloomFocus;
+    this.AbloomDamage = p1.abloomDamage + p2.abloomDamage + p3.abloomDamage;
     this.UltimateFocus = p1.ultimateFocus + p2.ultimateFocus + p3.ultimateFocus;
     this.UltimateEnablement = p1.ultimateEnablement + p2.ultimateEnablement + p3.ultimateEnablement;
 
@@ -318,6 +323,10 @@ class Team {
 
   StunDamageMultiplier(multiplier) {
     return this.StunBuildup*0.1*this.TotalDamageFocus*multiplier;
+  }
+
+  AbloomBuffUptime(uptimeSeconds) {
+    return Math.min(1, this.AbloomFocus * uptimeSeconds / 15);
   }
 
   PerChar(calcExpression) {
@@ -677,7 +686,7 @@ function chooseBestBuffForTeam(team, buffOptions) {
   }
 
   var bestBuffBonus = 0;
-  var bestBuffOption;
+  var bestBuffOption = buffOptions[0];
 
   buffOptions.forEach(buffOption => {
     const buffBonus = team.calculateBuff(buffOption.expression);

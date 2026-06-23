@@ -85,7 +85,7 @@ function updateShiyuDefenseFrontier5Sheet() {
   const minShiyuDefenseFrontier5TeamStrength = getShiyuDefenseFrontier5Sheet().getRange(minShiyuDefenseFrontier5TeamStrengthRange).getValue();
   const allTeams = getAllTeams(minShiyuDefenseFrontier5TeamStrength);
   const teamTriples = computeBestDistinctTeamTriples(allTeams, shiyuDefenseFrontier5Team1BuffExpressions, shiyuDefenseFrontier5Team2BuffExpressions, shiyuDefenseFrontier5Team3BuffExpressions);
-  const sortedTriples = teamTriples.sort((triple1, triple2) => triple2.minStrength() - triple1.minStrength() || triple2.totalStrength() - triple1.totalStrength());
+  const sortedTriples = teamTriples.sort((triple1, triple2) => (triple2.minStrength() - triple1.minStrength()) * 0.5 + (triple2.totalStrength()/3 - triple1.totalStrength()/3) * 0.5); 
   updateShiyuDefenseFrontier5DistinctTeamsSheet(sortedTriples);
 }
 
