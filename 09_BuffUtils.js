@@ -941,12 +941,12 @@ function CALCULATE_SYNERGY_BUFFS(data) {
  * @param {string} char1
  * @param {string} char2
  * @param {string} char3
+ * @customfunction
  */
 function DEBUG_TEAM(char1, char2, char3) {
   const team = new Team(char1, char2, char3);
   if (!team.p1) {
-    Logger.log("Invalid team characters provided.");
-    return;
+    return "Invalid team characters provided.";
   }
 
   const debugObj = Object.assign({}, team);
@@ -955,5 +955,5 @@ function DEBUG_TEAM(char1, char2, char3) {
   delete debugObj.p2;
   delete debugObj.p3;
 
-  Logger.log(JSON.stringify(debugObj, null, 2));
+  return JSON.stringify(debugObj, null, 2);
 }
