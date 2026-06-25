@@ -935,3 +935,25 @@ function CALCULATE_SYNERGY_BUFFS(data) {
 
   return results;
 }
+
+/**
+ * Debugs team calculations for a given team of 3 characters.
+ * @param {string} char1
+ * @param {string} char2
+ * @param {string} char3
+ */
+function DEBUG_TEAM(char1, char2, char3) {
+  const team = new Team(char1, char2, char3);
+  if (!team.p1) {
+    Logger.log("Invalid team characters provided.");
+    return;
+  }
+
+  const debugObj = Object.assign({}, team);
+  delete debugObj.characters;
+  delete debugObj.p1;
+  delete debugObj.p2;
+  delete debugObj.p3;
+
+  Logger.log(JSON.stringify(debugObj, null, 2));
+}
