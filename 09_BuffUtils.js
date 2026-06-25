@@ -109,6 +109,7 @@ function initCharsToBuffParams() {
       exSpecialBuffUptime: function(uptimeSeconds) {
         return Math.min(1, this.exSpecialFocus * uptimeSeconds / 10);
       },
+      energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
       ultimateFocus : Number(charactersData[row][cols.ultimateFocus]),
       ultimateBuffUptime: function(uptimeSeconds) {
         return Math.min(1, this.ultimateFocus * uptimeSeconds / 60);
@@ -120,10 +121,10 @@ function initCharsToBuffParams() {
       defBenefit : Number(charactersData[row][cols.defBenefit]),
       resShredBenefit : Number(charactersData[row][cols.resShredBenefit]),
       defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
+      damageBonusBenefit : Number(charactersData[row][cols.damageBonusBenefit]),
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
-      energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
       etherVeilFocus : Number(charactersData[row][cols.etherVeilFocus]),
       abloomFocus : abloomFocus,
       abloomDamage : abloomFocus * damageFocus,
@@ -277,6 +278,7 @@ class Team {
     this.ChainEnablement = p1.chainEnablement + p2.chainEnablement + p3.chainEnablement;
     this.AftershockFocus = p1.aftershockFocus + p2.aftershockFocus + p3.aftershockFocus;
     this.EXSpecialFocus = p1.exSpecialFocus + p2.exSpecialFocus + p3.exSpecialFocus;
+    this.EnergyRegenBenefit = p1.energyRegenBenefit + p2.energyRegenBenefit + p3.energyRegenBenefit;
     this.HasAftershock = this.AftershockFocus > 0;
     this.AftershockDamage = p1.aftershockDamage + p2.aftershockDamage + p3.aftershockDamage;
     this.AbloomFocus = p1.abloomFocus + p2.abloomFocus + p3.abloomFocus;
@@ -289,10 +291,10 @@ class Team {
     this.DefenseBenefit = p1.defBenefit + p2.defBenefit + p3.defBenefit;
     this.ResistanceShredBenefit = p1.resShredBenefit + p2.resShredBenefit + p3.resShredBenefit;
     this.DefenseShredBenefit = p1.defShredBenefit + p2.defShredBenefit + p3.defShredBenefit;
+    this.DamageBonusBenefit = p1.damageBonusBenefit + p2.damageBonusBenefit + p3.damageBonusBenefit;
     this.ImpactBenefit = p1.impactBenefit + p2.impactBenefit + p3.impactBenefit;
     this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
     this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
-    this.EnergyRegenBenefit = p1.energyRegenBenefit + p2.energyRegenBenefit + p3.energyRegenBenefit;
 
     this.EtherVeilFocus = p1.etherVeilFocus + p2.etherVeilFocus + p3.etherVeilFocus;
   }
