@@ -253,20 +253,58 @@ class Team {
       + p2.tags.includes("PolarDisorder")
       + p3.tags.includes("PolarDisorder");
 
-    this.DisorderFocus =
-        ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
-      + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
-      + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
-      + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
-      + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
-      + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
-      + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
-      / 4;
-    if (this.DisorderFocus < 1 || !hasDisorder) {
-      this.DisorderFocus *= 0.25 * numPolarDisorders;
+    this.VortexFocus = 0;
+    this.DisorderFocus = 0;
+    if (hasWindAnomaly) {
+      this.VortexFocus =
+          ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
+        + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
+        + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
+        + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
+        + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
+        + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
+        + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0)
+        + (this.WindAnomalyBuildup >= 2 ? this.WindAnomalyBuildup : 0))
+        / 4;
     } else {
-      this.DisorderFocus += 0.25 * numPolarDisorders;
+      this.DisorderFocus =
+          ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
+        + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
+        + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
+        + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
+        + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
+        + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
+        + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
+        / 4;
+      if (this.DisorderFocus < 1 || !hasDisorder) {
+        // Is this right? If !hasDisorder, won't this still be 0?
+        this.DisorderFocus *= 0.25 * numPolarDisorders;
+      } else {
+        this.DisorderFocus += 0.25 * numPolarDisorders;
+      }
     }
+
+    const totalContaminationDamage = this.PhysicalDamage + this.EtherDamage + this.FireDamage + this.IceDamage + this.ElectricDamage;
+    const contaminationBuff = this.ContaminationBuffUptime(30);
+    this.PhysicalContamination = contaminationBuff * this.PhysicalDamage / totalContaminationDamage;
+    this.EtherContamination = contaminationBuff * this.EtherDamage / totalContaminationDamage;
+    this.FireContamination = contaminationBuff * this.FireDamage / totalContaminationDamage;
+    this.IceContamination = contaminationBuff * this.IceDamage / totalContaminationDamage;
+    this.ElectricContamination = contaminationBuff * this.ElectricDamage / totalContaminationDamage;
+    this.ContaminationDamageBonus =
+        (this.PhysicalContamination * this.PhysicalDamage
+       + this.EtherContamination * this.EtherDamage
+       + this.FireContamination * this.FireDamage
+       + this.IceContamination * this.IceDamage
+       + this.ElectricContamination * this.ElectricContamination
+       + contaminationBuff * this.WindDamage)
+       * 0.1;
+    this.ContaminationAnomalyBuildup =
+        this.PhysicalContamination * this.PhysicalAnomalyBuildup
+      + this.EtherContamination * this.EtherAnomalyBuildup
+      + this.FireContamination * this.FireAnomalyBuildup
+      + this.IceContamination * this.IceAnomalyBuildup
+      + this.ElectricContamination * this.ElectricAnomalyBuildup;
 
     this.ShieldFocus = p1.shieldFocus + p2.shieldFocus + p3.shieldFocus;
     this.HealingFocus = p1.healingFocus + p2.healingFocus + p3.healingFocus;
@@ -329,6 +367,10 @@ class Team {
 
   AbloomBuffUptime(uptimeSeconds) {
     return Math.min(1, this.AbloomFocus * uptimeSeconds / 15);
+  }
+
+  ContaminationBuffUptime(uptimeSeconds) {
+    return Math.min(1, (this.WindAnomalyBuildup || 0) * uptimeSeconds / 60);
   }
 
   PerChar(calcExpression) {
