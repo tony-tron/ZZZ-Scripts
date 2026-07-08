@@ -128,6 +128,7 @@ function initCharsToBuffParams() {
       etherVeilFocus : Number(charactersData[row][cols.etherVeilFocus]),
       abloomFocus : abloomFocus,
       abloomDamage : abloomFocus * damageFocus,
+      teamSheerForce : Number(charactersData[row][cols.teamSheerForce]),
     };
 
     charsToBuffParams.set(character, buffParams);
@@ -321,6 +322,7 @@ class Team {
     this.AftershockDamage = p1.aftershockDamage + p2.aftershockDamage + p3.aftershockDamage;
     this.AbloomFocus = p1.abloomFocus + p2.abloomFocus + p3.abloomFocus;
     this.AbloomDamage = p1.abloomDamage + p2.abloomDamage + p3.abloomDamage;
+    this.TeamSheerForce = p1.teamSheerForce + p2.teamSheerForce + p3.teamSheerForce;
     this.UltimateFocus = p1.ultimateFocus + p2.ultimateFocus + p3.ultimateFocus;
     this.UltimateEnablement = p1.ultimateEnablement + p2.ultimateEnablement + p3.ultimateEnablement;
 

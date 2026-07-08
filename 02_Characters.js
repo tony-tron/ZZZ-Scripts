@@ -112,6 +112,7 @@ function initCharactersColumns() {
     critDamageBenefit : 52,
     etherVeilFocus : 53,
     abloomFocus : 54,
+    teamSheerForce : 55,
   };
   return characterColumns;
 }
