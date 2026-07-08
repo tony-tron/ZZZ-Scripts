@@ -59,6 +59,7 @@ function initCharsToBuffParams() {
 
       fieldTime : fieldTime,
       stunBuildup : Number(charactersData[row][cols.stunBuildup]),
+      stunExtension : Number(charactersData[row][cols.stunExtension]),
 
       anomalyBuildup : anomalyBuildup,
       physicalAnomalyBuildup : attribute == "Physical" && character != "Ye Shunguang" ? anomalyBuildup : 0,
@@ -178,6 +179,8 @@ class Team {
     this.Tags = p1.tags + p2.tags + p3.tags;
     this.FieldTime = p1.fieldTime + p2.fieldTime + p3.fieldTime;
     this.StunBuildup = p1.stunBuildup + p2.stunBuildup + p3.stunBuildup;
+    this.StunExtension = p1.stunExtension + p2.stunExtension + p3.stunExtension;
+    this.StunUptime = this.StunBuildup + this.StunExtension;
 
     this.TotalAnomalyBuildup = p1.anomalyBuildup + p2.anomalyBuildup + p3.anomalyBuildup;
     this.PhysicalAnomalyBuildup = p1.physicalAnomalyBuildup + p2.physicalAnomalyBuildup + p3.physicalAnomalyBuildup;
