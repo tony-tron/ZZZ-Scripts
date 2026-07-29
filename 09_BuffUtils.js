@@ -50,6 +50,7 @@ function initCharsToBuffParams() {
       ice : attribute == "Ice" ? 1 : 0,
       electric : attribute == "Electric" ? 1 : 0,
       wind : attribute == "Wind" ? 1 : 0,
+      lumiflux : attribute == "Lumiflux" ? 1 : 0,
 
       defensiveAssist : assistType == "Defensive" ? 1 : 0,
       evasiveAssist : assistType == "Evasive" ? 1 : 0,
@@ -70,6 +71,7 @@ function initCharsToBuffParams() {
       frostAnomalyBuildup : character == "Miyabi" ? anomalyBuildup : 0,
       electricAnomalyBuildup : attribute == "Electric" ? anomalyBuildup : 0,
       windAnomalyBuildup : attribute == "Wind" ? anomalyBuildup : 0,
+      lumifluxAnomalyBuildup : attribute == "Lumiflux" ? anomalyBuildup : 0,
 
       damageFocus : damageFocus,
       offFieldDamage : fieldTime <= 0 ? damageFocus : 0,
@@ -80,6 +82,7 @@ function initCharsToBuffParams() {
       iceDamage : attribute == "Ice" ? damageFocus : 0,
       electricDamage : attribute == "Electric" ? damageFocus : 0,
       windDamage : attribute == "Wind" ? damageFocus : 0,
+      lumifluxDamage : attribute == "Lumiflux" ? damageFocus : 0,
       sheerDamage : specialty == "Rupture" ? damageFocus : 0,
       basicAttack : Number(charactersData[row][cols.basicAttack]),
       dashAttack : Number(charactersData[row][cols.dashAttack]),
@@ -97,6 +100,7 @@ function initCharsToBuffParams() {
       iceAnomalyDamage : attribute == "Ice" ? anomalyDamage : 0,
       electricAnomalyDamage : attribute == "Electric" ? anomalyDamage : 0,
       windAnomalyDamage : attribute == "Wind" ? anomalyDamage : 0,
+      lumifluxAnomalyDamage : attribute == "Lumiflux" ? anomalyDamage : 0,
 
       shieldFocus : Number(charactersData[row][cols.shieldFocus]),
       healingFocus : Number(charactersData[row][cols.healingFocus]),
@@ -173,6 +177,7 @@ class Team {
     this.NumIce = p1.ice + p2.ice + p3.ice;
     this.NumElectric = p1.electric + p2.electric + p3.electric;
     this.NumWind = p1.wind + p2.wind + p3.wind;
+    this.NumLumiflux = p1.lumiflux + p2.lumiflux + p3.lumiflux;
 
     this.NumDefensiveAssist = p1.defensiveAssist + p2.defensiveAssist + p3.defensiveAssist;
     this.NumEvasiveAssist = p1.evasiveAssist + p2.evasiveAssist + p3.evasiveAssist;
@@ -191,6 +196,7 @@ class Team {
     this.FrostAnomalyBuildup = p1.frostAnomalyBuildup + p2.frostAnomalyBuildup + p3.frostAnomalyBuildup;
     this.ElectricAnomalyBuildup = p1.electricAnomalyBuildup + p2.electricAnomalyBuildup + p3.electricAnomalyBuildup;
     this.WindAnomalyBuildup = p1.windAnomalyBuildup + p2.windAnomalyBuildup + p3.windAnomalyBuildup;
+    this.LumifluxAnomalyBuildup = p1.lumifluxAnomalyBuildup + p2.lumifluxAnomalyBuildup + p3.lumifluxAnomalyBuildup;
 
     this.OffFieldDamage = p1.offFieldDamage + p2.offFieldDamage + p3.offFieldDamage;
     this.OnFieldDamage = p1.onFieldDamage + p2.onFieldDamage + p3.onFieldDamage;
@@ -202,6 +208,7 @@ class Team {
     this.IceDamage = p1.iceDamage + p2.iceDamage + p3.iceDamage;
     this.ElectricDamage = p1.electricDamage + p2.electricDamage + p3.electricDamage;
     this.WindDamage = p1.windDamage + p2.windDamage + p3.windDamage;
+    this.LumifluxDamage = p1.lumifluxDamage + p2.lumifluxDamage + p3.lumifluxDamage;
     this.SheerDamage = p1.sheerDamage + p2.sheerDamage + p3.sheerDamage;
     this.BasicAttackDamage = p1.basicAttack + p2.basicAttack + p3.basicAttack;
     this.DashAttackDamage = p1.dashAttack + p2.dashAttack + p3.dashAttack;
@@ -219,6 +226,7 @@ class Team {
     this.IceAnomalyDamage = p1.iceAnomalyDamage + p2.iceAnomalyDamage + p3.iceAnomalyDamage;
     this.ElectricAnomalyDamage = p1.electricAnomalyDamage + p2.electricAnomalyDamage + p3.electricAnomalyDamage;
     this.WindAnomalyDamage = p1.windAnomalyDamage + p2.windAnomalyDamage + p3.windAnomalyDamage;
+    this.LumifluxAnomalyDamage = p1.lumifluxAnomalyDamage + p2.lumifluxAnomalyDamage + p3.lumifluxAnomalyDamage;
 
     _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
     _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
@@ -231,6 +239,7 @@ class Team {
     const hasFrostAnomaly = this.FrostAnomalyBuildup >= 2;
     const hasElectricAnomaly = this.ElectricAnomalyBuildup >= 2;
     const hasWindAnomaly = this.WindAnomalyBuildup >= 2;
+    const hasLumifluxAnomaly = this.LumifluxAnomalyBuildup >= 2;
     const physicalAnomaly = hasPhysicalAnomaly ? this.PhysicalAnomalyBuildup : 0;
     const honedEdgeAnomaly = hasHonedEdgeAnomaly ? this.HonedEdgeAnomalyBuildup : 0;
     const etherAnomaly = hasEtherAnomaly ? this.EtherAnomalyBuildup : 0;
@@ -239,6 +248,7 @@ class Team {
     const frostAnomaly = hasFrostAnomaly ? this.FrostAnomalyBuildup : 0;
     const electricAnomaly = hasElectricAnomaly ? this.ElectricAnomalyBuildup : 0;
     const windAnomaly = hasWindAnomaly ? this.WindAnomalyBuildup : 0;
+    const lumifluxAnomaly = hasLumifluxAnomaly ? this.LumifluxAnomalyBuildup : 0;
     this.TotalAnomaly =
         physicalAnomaly
       + honedEdgeAnomaly
@@ -247,10 +257,11 @@ class Team {
       + iceAnomaly
       + frostAnomaly
       + electricAnomaly
-      + windAnomaly;
+      + windAnomaly
+      + lumifluxAnomaly;
     const numAnomalyAttributes = hasPhysicalAnomaly + hasHonedEdgeAnomaly + hasEtherAnomaly + hasFireAnomaly + hasIceAnomaly + hasFrostAnomaly + hasElectricAnomaly;
 
-    this.HasAttributeAnomaly = numAnomalyAttributes > 0 || hasWindAnomaly;
+    this.HasAttributeAnomaly = numAnomalyAttributes > 0 || hasWindAnomaly || hasLumifluxAnomaly;
     const hasDisorder = numAnomalyAttributes > 1;
     const numPolarDisorders =
       p1.tags.includes("PolarDisorder")
@@ -288,19 +299,21 @@ class Team {
       }
     }
 
-    const totalContaminationDamage = this.PhysicalDamage + this.EtherDamage + this.FireDamage + this.IceDamage + this.ElectricDamage;
+    const totalContaminationDamage = this.PhysicalDamage + this.EtherDamage + this.FireDamage + this.IceDamage + this.ElectricDamage + this.LumifluxDamage;
     const contaminationBuff = this.ContaminationBuffUptime(30);
     this.PhysicalContamination = contaminationBuff * this.PhysicalDamage / totalContaminationDamage;
     this.EtherContamination = contaminationBuff * this.EtherDamage / totalContaminationDamage;
     this.FireContamination = contaminationBuff * this.FireDamage / totalContaminationDamage;
     this.IceContamination = contaminationBuff * this.IceDamage / totalContaminationDamage;
     this.ElectricContamination = contaminationBuff * this.ElectricDamage / totalContaminationDamage;
+    this.LumifluxContamination = contaminationBuff * this.LumifluxDamage / totalContaminationDamage;
     this.ContaminationDamageBonus =
         (this.PhysicalContamination * this.PhysicalDamage
        + this.EtherContamination * this.EtherDamage
        + this.FireContamination * this.FireDamage
        + this.IceContamination * this.IceDamage
        + this.ElectricContamination * this.ElectricContamination
+       + this.LumifluxContamination * this.LumifluxDamage
        + contaminationBuff * this.WindDamage)
        * 0.1;
     this.ContaminationAnomalyBuildup =
@@ -308,7 +321,8 @@ class Team {
       + this.EtherContamination * this.EtherAnomalyBuildup
       + this.FireContamination * this.FireAnomalyBuildup
       + this.IceContamination * this.IceAnomalyBuildup
-      + this.ElectricContamination * this.ElectricAnomalyBuildup;
+      + this.ElectricContamination * this.ElectricAnomalyBuildup
+      + this.LumifluxContamination * this.LumifluxAnomalyBuildup;
 
     this.ShieldFocus = p1.shieldFocus + p2.shieldFocus + p3.shieldFocus;
     this.HealingFocus = p1.healingFocus + p2.healingFocus + p3.healingFocus;
@@ -516,6 +530,13 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
     sunnaParams.wind = 0;
     sunnaParams.windAnomalyBuildup = 0;
     sunnaParams.windDamage = 0;
+  } else if (sourceAttribute == "Lumiflux") {
+    team.LumifluxAnomalyBuildup -= sunnaBuildup;
+    team.LumifluxDamage -= sunnaDamage;
+    team.NumLumiflux -= 1;
+    sunnaParams.lumiflux = 0;
+    sunnaParams.lumifluxAnomalyBuildup = 0;
+    sunnaParams.lumifluxDamage = 0;
   }
 
   // Add to Targets proportionally
@@ -572,6 +593,13 @@ function _updateTeamForSunna(team, char1, char2, char3, char1Params, char2Params
       sunnaParams.wind = (sunnaParams.wind || 0) + ratio;
       sunnaParams.windAnomalyBuildup = (sunnaParams.windAnomalyBuildup || 0) + sunnaBuildup * ratio;
       sunnaParams.windDamage = (sunnaParams.windDamage || 0) + sunnaDamage * ratio;
+    } else if (targetAttribute == "Lumiflux") {
+      team.LumifluxAnomalyBuildup += sunnaBuildup * ratio;
+      team.LumifluxDamage += sunnaDamage * ratio;
+      team.NumLumiflux += ratio;
+      sunnaParams.lumiflux = (sunnaParams.lumiflux || 0) + ratio;
+      sunnaParams.lumifluxAnomalyBuildup = (sunnaParams.lumifluxAnomalyBuildup || 0) + sunnaBuildup * ratio;
+      sunnaParams.lumifluxDamage = (sunnaParams.lumifluxDamage || 0) + sunnaDamage * ratio;
     }
   });
 }
@@ -604,6 +632,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   team.IceAnomalyBuildup += team.NumIce * yuzuhaBuildup * 0.5;
   team.ElectricAnomalyBuildup += team.NumElectric * yuzuhaBuildup * 0.5;
   team.WindAnomalyBuildup += team.NumWind * yuzuhaBuildup * 0.5;
+  team.LumifluxAnomalyBuildup += team.NumLumiflux * yuzuhaBuildup * 0.5;
 
   team.PhysicalDamage -= yuzuhaDamage;
   team.PhysicalDamage += (team.NumPhysical - 1) * yuzuhaDamage * 0.5;
@@ -612,6 +641,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   team.IceDamage += team.NumIce * yuzuhaDamage * 0.5;
   team.ElectricDamage += team.NumElectric * yuzuhaDamage * 0.5;
   team.WindDamage += team.NumWind * yuzuhaDamage * 0.5;
+  team.LumifluxDamage += team.NumLumiflux * yuzuhaDamage * 0.5;
 
   const yuzuhaPhysical = (team.NumPhysical - 1) * 0.5;
   const yuzuhaEther = team.NumEther * 0.5;
@@ -619,6 +649,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   const yuzuhaIce = team.NumIce * 0.5;
   const yuzuhaElectric = team.NumElectric * 0.5;
   const yuzuhaWind = team.NumWind * 0.5;
+  const yuzuhaLumiflux = team.NumLumiflux * 0.5;
 
   team.NumPhysical -= 1;
   team.NumPhysical *= 1.5;
@@ -627,6 +658,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
   team.NumIce *= 1.5;
   team.NumElectric *= 1.5;
   team.NumWind *= 1.5;
+  team.NumLumiflux *= 1.5;
 
   if (yuzuhaParams) {
     yuzuhaParams.physicalAnomalyBuildup = yuzuhaPhysical * yuzuhaBuildup;
@@ -635,6 +667,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
     yuzuhaParams.iceAnomalyBuildup = yuzuhaIce * yuzuhaBuildup;
     yuzuhaParams.electricAnomalyBuildup = yuzuhaElectric * yuzuhaBuildup;
     yuzuhaParams.windAnomalyBuildup = yuzuhaWind * yuzuhaBuildup;
+    yuzuhaParams.lumifluxAnomalyBuildup = yuzuhaLumiflux * yuzuhaBuildup;
 
     yuzuhaParams.physicalDamage = yuzuhaPhysical * yuzuhaDamage;
     yuzuhaParams.etherDamage = yuzuhaEther * yuzuhaDamage;
@@ -642,6 +675,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
     yuzuhaParams.iceDamage = yuzuhaIce * yuzuhaDamage;
     yuzuhaParams.electricDamage = yuzuhaElectric * yuzuhaDamage;
     yuzuhaParams.windDamage = yuzuhaWind * yuzuhaDamage;
+    yuzuhaParams.lumifluxDamage = yuzuhaLumiflux * yuzuhaDamage;
 
     yuzuhaParams.physical = yuzuhaPhysical;
     yuzuhaParams.ether = yuzuhaEther;
@@ -649,6 +683,7 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
     yuzuhaParams.ice = yuzuhaIce;
     yuzuhaParams.electric = yuzuhaElectric;
     yuzuhaParams.wind = yuzuhaWind;
+    yuzuhaParams.lumiflux = yuzuhaLumiflux;
   }
 }
 
