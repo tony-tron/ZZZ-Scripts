@@ -419,22 +419,60 @@ class Team {
     const p1 = this.p1;
     const p2 = this.p2;
     const p3 = this.p3;
+    const attrLower = attributes.toLowerCase();
 
-    function addForChar(p) {
-      if (attributes.toLowerCase().includes(p.attribute.toLowerCase())) {
+    function isCounted(p) {
+      return attrLower.includes(p.attribute.toLowerCase());
+    }
+
+    const c1 = isCounted(p1);
+    const c2 = isCounted(p2);
+    const c3 = isCounted(p3);
+
+    function addForChar(p, isC, other1C, other2C) {
+      const isLumi = p.attribute.toLowerCase() === 'lumiflux';
+      if (isC || (isLumi && (other1C || other2C))) {
         total += p.damageFocus*0.2 + p.stunBuildup*0.2 + p.anomalyBuildup*0.2;
       }
     }
 
-    addForChar(p1);
-    addForChar(p2);
-    addForChar(p3);
+    addForChar(p1, c1, c2, c3);
+    addForChar(p2, c2, c1, c3);
+    addForChar(p3, c3, c1, c2);
 
     return total;
   }
 
   Nerf(attributes) {
-    return -this.Buff(attributes);
+    if (!attributes) return 0;
+
+    var total = 0;
+
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
+    const attrLower = attributes.toLowerCase();
+
+    function isListed(p) {
+      return attrLower.includes(p.attribute.toLowerCase());
+    }
+
+    const c1 = isListed(p1);
+    const c2 = isListed(p2);
+    const c3 = isListed(p3);
+
+    function subForChar(p, isC, other1C, other2C) {
+      const isLumi = p.attribute.toLowerCase() === 'lumiflux';
+      if (isC && (!isLumi || (other1C && other2C))) {
+        total -= p.damageFocus*0.2 + p.stunBuildup*0.2 + p.anomalyBuildup*0.2;
+      }
+    }
+
+    subForChar(p1, c1, c2, c3);
+    subForChar(p2, c2, c1, c3);
+    subForChar(p3, c3, c1, c2);
+
+    return total;
   }
 
   calculateBuff(calcExpression) {
