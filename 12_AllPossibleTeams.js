@@ -48,6 +48,7 @@ function initializeAllTeamsAndBuffParams() {
     var char3 = _teams[r][2];
 
     if (!params.has(char1)) break;
+    if (!params.has(char2) || !params.has(char3)) continue;
 
     var team = new Team(char1, char2, char3);
 
