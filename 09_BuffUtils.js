@@ -400,7 +400,7 @@ class Team {
     if (!calcExpression) return 0;
 
     if (!formulaCache[calcExpression]) {
-      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+      formulaCache[calcExpression] = new Function("ctx", "try { with(ctx) { with(this || {}) { return Number(" + calcExpression + "); } } } catch(e) { return 0; }");
     }
 
     const fn = formulaCache[calcExpression];
@@ -408,7 +408,7 @@ class Team {
     const p2 = this.p2;
     const p3 = this.p3;
 
-    return fn(p1) + fn(p2) + fn(p3);
+    return fn.call(p1, this) + fn.call(p2, this) + fn.call(p3, this);
   }
 
   Buff(attributes) {
@@ -475,14 +475,14 @@ class Team {
     return total;
   }
 
-  calculateBuff(calcExpression) {
+  calculateBuff(calcExpression, charContext) {
     if (!calcExpression) return 0;
 
     if (!formulaCache[calcExpression]) {
-      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+      formulaCache[calcExpression] = new Function("ctx", "try { with(ctx) { with(this || {}) { return Number(" + calcExpression + "); } } } catch(e) { return 0; }");
     }
 
-    return formulaCache[calcExpression](this);
+    return formulaCache[calcExpression].call(charContext || this, this);
   }
 }
 
@@ -739,7 +739,7 @@ function compileBuffFunction(expression) {
   // Create a function that takes 'ctx' (context/team) and executes the math
   // We use "Number()" to ensure the result is always a valid number.
   try {
-    return new Function("ctx", "with(ctx) { return Number(" + expression + "); }");
+    return new Function("ctx", "try { with(ctx) { with(this || {}) { return Number(" + expression + "); } } } catch(e) { return 0; }");
   } catch (e) {
     console.error("Failed to compile formula: " + expression, e);
     return function() { return 0; };
@@ -1011,9 +1011,9 @@ function CALCULATE_TEAM_BUFFS(teamRange, triggerRange) {
 
     // 5. Execute pre-compiled functions directly.
     let totalBuff = 0;
-    if (p1) totalBuff += p1.teamBuffFunction(team);
-    if (p2) totalBuff += p2.teamBuffFunction(team);
-    if (p3) totalBuff += p3.teamBuffFunction(team);
+    if (p1) totalBuff += p1.teamBuffFunction.call(p1, team);
+    if (p2) totalBuff += p2.teamBuffFunction.call(p2, team);
+    if (p3) totalBuff += p3.teamBuffFunction.call(p3, team);
 
     results.push([roundToQuarter(totalBuff)]);
   }
@@ -1049,9 +1049,9 @@ function CALCULATE_SYNERGY_BUFFS(data) {
 
     // Direct index access is faster than destructuring inside a hot loop.
     // Indexes: 3/4/5 are Synergy Booleans, 6/7/8 are Buff Expressions.
-    if (row[3]) totalBuff += teamObj.calculateBuff(row[6]);
-    if (row[4]) totalBuff += teamObj.calculateBuff(row[7]);
-    if (row[5]) totalBuff += teamObj.calculateBuff(row[8]);
+    if (row[3]) totalBuff += teamObj.calculateBuff(row[6], teamObj.p1);
+    if (row[4]) totalBuff += teamObj.calculateBuff(row[7], teamObj.p2);
+    if (row[5]) totalBuff += teamObj.calculateBuff(row[8], teamObj.p3);
 
     // Round to the nearest 0.25
     results.push([roundToQuarter(totalBuff)]);
