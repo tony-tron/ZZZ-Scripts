@@ -369,8 +369,7 @@ class Team {
       this.IceAnomalyBuildup || 0,
       this.FrostAnomalyBuildup || 0,
       this.ElectricAnomalyBuildup || 0,
-      this.WindAnomalyBuildup || 0,
-      this.LumifluxAnomalyBuildup || 0
+      this.WindAnomalyBuildup || 0
     ].sort((a, b) => b - a);
 
     let totalUptime = 0;
