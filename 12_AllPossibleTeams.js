@@ -86,6 +86,10 @@ function SUPPORTED_TEAM_PROPERTIES() {
       properties.push([property, "Parameter: uptimeSeconds"]);
       continue;
     }
+    if (property === "PerAttributeAnomalyBuffUptime") {
+      properties.push([property, "Parameter: uptimeSeconds"]);
+      continue;
+    }
     if (property === "DisorderBuffUptime") {
       properties.push([property, "Parameter: uptimeSeconds"]);
       continue;

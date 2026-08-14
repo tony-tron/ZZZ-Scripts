@@ -360,6 +360,25 @@ class Team {
     return Math.min(1, (this.TotalAnomaly || 0) * uptimeSeconds / 60);
   }
 
+  PerAttributeAnomalyBuffUptime(uptimeSeconds) {
+    const buildups = [
+      this.PhysicalAnomalyBuildup || 0,
+      this.HonedEdgeAnomalyBuildup || 0,
+      this.EtherAnomalyBuildup || 0,
+      this.FireAnomalyBuildup || 0,
+      this.IceAnomalyBuildup || 0,
+      this.FrostAnomalyBuildup || 0,
+      this.ElectricAnomalyBuildup || 0,
+      this.WindAnomalyBuildup || 0
+    ].sort((a, b) => b - a);
+
+    let totalUptime = 0;
+    for (let i = 0; i < 3; i++) {
+      totalUptime += Math.min(1, buildups[i] * uptimeSeconds / 60);
+    }
+    return totalUptime;
+  }
+
   DisorderBuffUptime(uptimeSeconds) {
     return Math.min(1, this.DisorderFocus * uptimeSeconds / 15);
   }
