@@ -192,12 +192,12 @@ function _orderTeamForAllPossibleTeams(teamChars, paramsMap) {
     const pDps = paramsMap[dpsChar];
     const pCand = paramsMap[candidate];
 
-    if (pCand.damageFocus > pDps.damageFocus) {
+    if (Math.abs(pCand.quickAssistFocus) < Math.abs(pDps.quickAssistFocus)) {
       dpsChar = candidate;
-    } else if (pCand.damageFocus === pDps.damageFocus) {
-      if (Math.abs(pCand.quickAssistFocus) < Math.abs(pDps.quickAssistFocus)) {
+    } else if (Math.abs(pCand.quickAssistFocus) === Math.abs(pDps.quickAssistFocus)) {
+      if (pCand.damageFocus > pDps.damageFocus) {
         dpsChar = candidate;
-      } else if (Math.abs(pCand.quickAssistFocus) === Math.abs(pDps.quickAssistFocus)) {
+      } else if (pCand.damageFocus === pDps.damageFocus) {
         if (pCand.fieldTime > pDps.fieldTime) {
           dpsChar = candidate;
         }
@@ -223,7 +223,13 @@ function _orderTeamForAllPossibleTeams(teamChars, paramsMap) {
   let bestPos0FieldTime = Infinity;
   let bestPos2FieldTime = -Infinity;
 
+  const hasRemielle = teamChars.includes('Remielle');
+
   for (const perm of permutations) {
+    if (hasRemielle && perm[0] !== 'Remielle') {
+      continue;
+    }
+
     let score = 0;
 
     // Evaluate assist flow
