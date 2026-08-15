@@ -174,7 +174,6 @@ function populateAllPossibleTeamsSheet() {
   }
 
   const sheet = getAllPossibleTeamsSheet();
-  sheet.clearContents();
 
   if (allTeams.length > 0) {
     sheet.getRange(1, 1, allTeams.length, 3).setValues(allTeams);
