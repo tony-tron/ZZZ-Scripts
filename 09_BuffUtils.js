@@ -42,6 +42,7 @@ function initCharsToBuffParams() {
       anomaly : specialty == "Anomaly" ? 1 : 0,
       defense : specialty == "Defense" ? 1 : 0,
       rupture : specialty == "Rupture" ? 1 : 0,
+      armorer : specialty == "Armorer" ? 1 : 0,
 
       attribute : attribute,
       physical : attribute == "Physical" ? 1 : 0,
@@ -170,6 +171,7 @@ class Team {
     this.NumAnomaly = p1.anomaly + p2.anomaly + p3.anomaly;
     this.NumDefense = p1.defense + p2.defense + p3.defense;
     this.NumRupture = p1.rupture + p2.rupture + p3.rupture;
+    this.NumArmorer = p1.armorer + p2.armorer + p3.armorer;
 
     this.NumPhysical = p1.physical + p2.physical + p3.physical;
     this.NumEther = p1.ether + p2.ether + p3.ether;
