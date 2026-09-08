@@ -128,6 +128,7 @@ function initCharsToBuffParams() {
       resShredBenefit : Number(charactersData[row][cols.resShredBenefit]),
       defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
       damageBonusBenefit : Number(charactersData[row][cols.damageBonusBenefit]),
+      lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 1.5,
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
@@ -351,6 +352,7 @@ class Team {
     this.ResistanceShredBenefit = p1.resShredBenefit + p2.resShredBenefit + p3.resShredBenefit;
     this.DefenseShredBenefit = p1.defShredBenefit + p2.defShredBenefit + p3.defShredBenefit;
     this.DamageBonusBenefit = p1.damageBonusBenefit + p2.damageBonusBenefit + p3.damageBonusBenefit;
+    this.LacerationDamageBonusBenefit = p1.lacerationDamageBonusBenefit + p2.lacerationDamageBonusBenefit + p3.lacerationDamageBonusBenefit;
     this.ImpactBenefit = p1.impactBenefit + p2.impactBenefit + p3.impactBenefit;
     this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
     this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
