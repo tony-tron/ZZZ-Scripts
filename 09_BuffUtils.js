@@ -128,7 +128,7 @@ function initCharsToBuffParams() {
       resShredBenefit : Number(charactersData[row][cols.resShredBenefit]),
       defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
       damageBonusBenefit : Number(charactersData[row][cols.damageBonusBenefit]),
-      lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 1.5,
+      lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 2,
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
