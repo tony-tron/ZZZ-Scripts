@@ -116,6 +116,7 @@ function initCharsToBuffParams() {
         return Math.min(1, this.exSpecialFocus * uptimeSeconds / 10);
       },
       energyRegenBenefit : Number(charactersData[row][cols.energyRegenBenefit]),
+      sharpnessRegenBenefit : Number(charactersData[row][cols.sharpnessRegenBenefit]),
       ultimateFocus : Number(charactersData[row][cols.ultimateFocus]),
       ultimateBuffUptime: function(uptimeSeconds) {
         return Math.min(1, this.ultimateFocus * uptimeSeconds / 60);
@@ -129,6 +130,7 @@ function initCharsToBuffParams() {
       defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
       damageBonusBenefit : Number(charactersData[row][cols.damageBonusBenefit]),
       lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 3,
+      sharpDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 1.5,
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
@@ -136,6 +138,7 @@ function initCharsToBuffParams() {
       abloomFocus : abloomFocus,
       abloomDamage : abloomFocus * damageFocus,
       teamSheerForce : Number(charactersData[row][cols.teamSheerForce]),
+      gashBuildup : Number(charactersData[row][cols.gashBuildup]),
     };
 
     charsToBuffParams.set(character, buffParams);
@@ -338,6 +341,7 @@ class Team {
     this.AftershockFocus = p1.aftershockFocus + p2.aftershockFocus + p3.aftershockFocus;
     this.EXSpecialFocus = p1.exSpecialFocus + p2.exSpecialFocus + p3.exSpecialFocus;
     this.EnergyRegenBenefit = p1.energyRegenBenefit + p2.energyRegenBenefit + p3.energyRegenBenefit;
+    this.SharpnessRegenBenefit = p1.sharpnessRegenBenefit + p2.sharpnessRegenBenefit + p3.sharpnessRegenBenefit;
     this.HasAftershock = this.AftershockFocus > 0;
     this.AftershockDamage = p1.aftershockDamage + p2.aftershockDamage + p3.aftershockDamage;
     this.AbloomFocus = p1.abloomFocus + p2.abloomFocus + p3.abloomFocus;
@@ -353,11 +357,13 @@ class Team {
     this.DefenseShredBenefit = p1.defShredBenefit + p2.defShredBenefit + p3.defShredBenefit;
     this.DamageBonusBenefit = p1.damageBonusBenefit + p2.damageBonusBenefit + p3.damageBonusBenefit;
     this.LacerationDamageBonusBenefit = p1.lacerationDamageBonusBenefit + p2.lacerationDamageBonusBenefit + p3.lacerationDamageBonusBenefit;
+    this.SharpDamageBonusBenefit = p1.sharpDamageBonusBenefit + p2.sharpDamageBonusBenefit + p3.sharpDamageBonusBenefit;
     this.ImpactBenefit = p1.impactBenefit + p2.impactBenefit + p3.impactBenefit;
     this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
     this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
 
     this.EtherVeilFocus = p1.etherVeilFocus + p2.etherVeilFocus + p3.etherVeilFocus;
+    this.GashBuildup = p1.gashBuildup + p2.gashBuildup + p3.gashBuildup;
   }
 
   AnomalyBuffUptime(uptimeSeconds) {
