@@ -128,7 +128,7 @@ function initCharsToBuffParams() {
       resShredBenefit : Number(charactersData[row][cols.resShredBenefit]),
       defShredBenefit : Number(charactersData[row][cols.defShredBenefit]),
       damageBonusBenefit : Number(charactersData[row][cols.damageBonusBenefit]),
-      lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 2,
+      lacerationDamageBonusBenefit : (specialty == "Armorer" ? 1 : 0) * Number(charactersData[row][cols.damageBonusBenefit]) * 3,
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
@@ -396,19 +396,19 @@ class Team {
   }
 
   StunBuffUptime(uptimeSeconds) {
-    return Math.min(1, this.StunBuildup * uptimeSeconds / 60);
+    return Math.min(1, this.StunUptime * uptimeSeconds / 60);
   }
 
   ChainBuffUptime(uptimeSeconds) {
-    return Math.min(1, this.StunBuildup * uptimeSeconds / 60 + this.ChainEnablement * uptimeSeconds / 30 + this.ChainFocus * uptimeSeconds / 30);
+    return Math.min(1, this.StunUptime * uptimeSeconds / 60 + this.ChainEnablement * uptimeSeconds / 30 + this.ChainFocus * uptimeSeconds / 30);
   }
 
   StunDamageMultiplierOutsideWindow(multiplier) {
-    return this.PerChar('(name=="Ye Shunguang" ? 1 : ' + (this.StunBuildup*0.1) + ') * damageFocus * ' + multiplier);
+    return this.PerChar('(name=="Ye Shunguang" ? 1 : ' + (this.StunUptime*0.1) + ') * (damageFocus+lacerationDamageBonusBenefit) * ' + multiplier);
   }
 
   StunDamageMultiplier(multiplier) {
-    return this.StunBuildup*0.1*this.TotalDamageFocus*multiplier;
+    return this.StunUptime*0.1*(this.TotalDamageFocus+this.LacerationDamageBonusBenefit)*multiplier;
   }
 
   AbloomBuffUptime(uptimeSeconds) {
