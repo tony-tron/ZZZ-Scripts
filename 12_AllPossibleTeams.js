@@ -110,6 +110,10 @@ function SUPPORTED_TEAM_PROPERTIES() {
       properties.push([property, "Function, usage: PerChar('expression')"]);
       continue;
     }
+    if (property === "MaxChar") {
+      properties.push([property, "Function, usage: MaxChar('expression')"]);
+      continue;
+    }
     if (property === "Buff") {
       properties.push([property, "Parameter: attributes"]);
       continue;
@@ -131,7 +135,7 @@ function SUPPORTED_TEAM_PROPERTIES() {
 /**
  * Returns the list of all variables set for each character,
  * which can be used in the buff expressions for
- * Synergy Bonus and Team Synergy via `PerChar('expression')`.
+ * Synergy Bonus and Team Synergy via `PerChar('expression')` or `MaxChar('expression')`.
  * 
  * @customfunction
  */
