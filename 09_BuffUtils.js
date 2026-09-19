@@ -442,6 +442,21 @@ class Team {
     return fn(p1) + fn(p2) + fn(p3);
   }
 
+  MaxChar(calcExpression) {
+    if (!calcExpression) return 0;
+
+    if (!formulaCache[calcExpression]) {
+      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+    }
+
+    const fn = formulaCache[calcExpression];
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
+
+    return Math.max(fn(p1), fn(p2), fn(p3));
+  }
+
   Buff(attributes) {
     if (!attributes) return 0;
     
