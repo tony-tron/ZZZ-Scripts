@@ -134,6 +134,7 @@ function initCharsToBuffParams() {
       impactBenefit : Number(charactersData[row][cols.impactBenefit]),
       critRateBenefit : Number(charactersData[row][cols.critRateBenefit]),
       critDamageBenefit : Number(charactersData[row][cols.critDamageBenefit]),
+      critRateFocus : Number(charactersData[row][cols.critRateFocus]),
       etherVeilFocus : Number(charactersData[row][cols.etherVeilFocus]),
       abloomFocus : abloomFocus,
       abloomDamage : abloomFocus * damageFocus,
@@ -361,6 +362,7 @@ class Team {
     this.ImpactBenefit = p1.impactBenefit + p2.impactBenefit + p3.impactBenefit;
     this.CritRateBenefit = p1.critRateBenefit + p2.critRateBenefit + p3.critRateBenefit;
     this.CritDamageBenefit = p1.critDamageBenefit + p2.critDamageBenefit + p3.critDamageBenefit;
+    this.CritRateFocus = p1.critRateFocus + p2.critRateFocus + p3.critRateFocus;
 
     this.EtherVeilFocus = p1.etherVeilFocus + p2.etherVeilFocus + p3.etherVeilFocus;
     this.GashBuildup = p1.gashBuildup + p2.gashBuildup + p3.gashBuildup;
