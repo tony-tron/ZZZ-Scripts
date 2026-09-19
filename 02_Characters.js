@@ -112,10 +112,11 @@ function initCharactersColumns() {
     impactBenefit : 52,
     critRateBenefit : 53,
     critDamageBenefit : 54,
-    etherVeilFocus : 55,
-    abloomFocus : 56,
-    teamSheerForce : 57,
-    gashBuildup : 58,
+    critRateFocus : 55,
+    etherVeilFocus : 56,
+    abloomFocus : 57,
+    teamSheerForce : 58,
+    gashBuildup : 59,
   };
   return characterColumns;
 }
