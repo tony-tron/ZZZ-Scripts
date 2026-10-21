@@ -1108,13 +1108,23 @@ function CALCULATE_SYNERGY_BUFFS(data) {
 
 /**
  * Debugs team calculations for a given team of 3 characters.
- * @param {string} char1
- * @param {string} char2
- * @param {string} char3
+ * Accepts either 3 separate character arguments or an array/range of 3 characters.
+ * @param {string|Array<string>|Array<Array<string>>} char1 First character or array/range of characters.
+ * @param {string} [char2] Second character.
+ * @param {string} [char3] Third character.
  * @customfunction
  */
 function DEBUG_TEAM(char1, char2, char3) {
-  const team = new Team(char1, char2, char3);
+  const characters = [char1, char2, char3]
+    .flat(Infinity)
+    .filter(c => c !== undefined && c !== null && c !== "")
+    .map(c => typeof c === "string" ? c.trim() : c);
+
+  if (characters.length !== 3) {
+    return "Invalid team characters provided.";
+  }
+
+  const team = new Team(characters[0], characters[1], characters[2]);
   if (!team.p1) {
     return "Invalid team characters provided.";
   }
