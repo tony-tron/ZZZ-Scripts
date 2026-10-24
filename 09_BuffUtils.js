@@ -12,12 +12,17 @@ function getCharsToBuffParams() {
 // Cache to store compiled functions. 
 // Keys are the formula strings, values are the executable functions.
 const formulaCache = {};
+const fastTeamFormulaCache = {};
+let perCharValCache = {};
+let maxCharValCache = {};
 
 // Initializes all of the params per character (aggregating for the team is done during Team instantiation).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
   const charactersData = getCharactersDataRange().getValues();
   const cols = getCharactersColumns();
+  perCharValCache = {};
+  maxCharValCache = {};
 
   getCharacterNames().forEach((character, row) => {
     row += 1; // Header.
@@ -32,8 +37,21 @@ function initCharsToBuffParams() {
     const anomalyDamage = Number(charactersData[row][cols.anomalyDamage]);
     const aftershockFocus = Number(charactersData[row][cols.aftershockFocus]);
     const abloomFocus = Number(charactersData[row][cols.abloomFocus]);
+    const stunBuildup = Number(charactersData[row][cols.stunBuildup]);
+    const tagsStr = String(charactersData[row][cols.tags]);
+    const attrLower = String(attribute).toLowerCase();
 
+    const cid = row - 1;
     const buffParams = {
+      _cid : cid,
+      _charMaskLo : cid < 32 ? (1 << cid) : 0,
+      _charMaskHi : cid >= 32 ? (1 << (cid - 32)) : 0,
+      _isDynamicChar : character === "Sunna" || character === "Yuzuha",
+      _polarDisorder : tagsStr.includes("PolarDisorder") ? 1 : 0,
+      _attrLower : attrLower,
+      _isLumiflux : attrLower === "lumiflux",
+      _buffVal : damageFocus * 0.2 + stunBuildup * 0.2 + anomalyBuildup * 0.2,
+
       name : character,
       specialty : specialty,
       support : specialty == "Support" ? 1 : 0,
@@ -57,10 +75,10 @@ function initCharsToBuffParams() {
       evasiveAssist : assistType == "Evasive" ? 1 : 0,
 
       teamBuffFunction : compileBuffFunction(String(charactersData[row][cols.teamBuffFormula] || "0")),
-      tags : String(charactersData[row][cols.tags]),
+      tags : tagsStr,
 
       fieldTime : fieldTime,
-      stunBuildup : Number(charactersData[row][cols.stunBuildup]),
+      stunBuildup : stunBuildup,
       stunExtension : Number(charactersData[row][cols.stunExtension]),
 
       anomalyBuildup : anomalyBuildup,
@@ -162,9 +180,11 @@ class Team {
 
     if (!globalP1 || !globalP2 || !globalP3) return;
 
-    this.p1 = Object.assign({}, globalP1);
-    this.p2 = Object.assign({}, globalP2);
-    this.p3 = Object.assign({}, globalP3);
+    this.p1 = globalP1._isDynamicChar ? Object.assign({ _cloned: true }, globalP1) : globalP1;
+    this.p2 = globalP2._isDynamicChar ? Object.assign({ _cloned: true }, globalP2) : globalP2;
+    this.p3 = globalP3._isDynamicChar ? Object.assign({ _cloned: true }, globalP3) : globalP3;
+    this.charMaskLo = globalP1._charMaskLo | globalP2._charMaskLo | globalP3._charMaskLo;
+    this.charMaskHi = globalP1._charMaskHi | globalP2._charMaskHi | globalP3._charMaskHi;
 
     const p1 = this.p1;
     const p2 = this.p2;
@@ -235,8 +255,10 @@ class Team {
     this.WindAnomalyDamage = p1.windAnomalyDamage + p2.windAnomalyDamage + p3.windAnomalyDamage;
     this.LumifluxAnomalyDamage = p1.lumifluxAnomalyDamage + p2.lumifluxAnomalyDamage + p3.lumifluxAnomalyDamage;
 
-    _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
-    _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
+    if (p1._isDynamicChar || p2._isDynamicChar || p3._isDynamicChar) {
+      _updateTeamForSunna(this, p1.name, p2.name, p3.name, p1, p2, p3);
+      _updateTeamForYuzuha(this, p1.name, p2.name, p3.name, p1, p2, p3);
+    }
 
     const hasPhysicalAnomaly = this.PhysicalAnomalyBuildup >= 2;
     const hasHonedEdgeAnomaly = this.HonedEdgeAnomalyBuildup >= 2;
@@ -256,48 +278,27 @@ class Team {
     const electricAnomaly = hasElectricAnomaly ? this.ElectricAnomalyBuildup : 0;
     const windAnomaly = hasWindAnomaly ? this.WindAnomalyBuildup : 0;
     const lumifluxAnomaly = hasLumifluxAnomaly ? this.LumifluxAnomalyBuildup : 0;
-    this.TotalAnomaly =
+    const baseDisorderSum =
         physicalAnomaly
       + honedEdgeAnomaly
       + etherAnomaly
       + fireAnomaly
       + iceAnomaly
       + frostAnomaly
-      + electricAnomaly
-      + windAnomaly
-      + lumifluxAnomaly;
+      + electricAnomaly;
+    this.TotalAnomaly = baseDisorderSum + windAnomaly + lumifluxAnomaly;
     const numAnomalyAttributes = hasPhysicalAnomaly + hasHonedEdgeAnomaly + hasEtherAnomaly + hasFireAnomaly + hasIceAnomaly + hasFrostAnomaly + hasElectricAnomaly;
 
     this.HasAttributeAnomaly = numAnomalyAttributes > 0 || hasWindAnomaly || hasLumifluxAnomaly;
     const hasDisorder = numAnomalyAttributes > 1;
-    const numPolarDisorders =
-      p1.tags.includes("PolarDisorder")
-      + p2.tags.includes("PolarDisorder")
-      + p3.tags.includes("PolarDisorder");
+    const numPolarDisorders = p1._polarDisorder + p2._polarDisorder + p3._polarDisorder;
 
     this.VortexFocus = 0;
     this.DisorderFocus = 0;
     if (hasWindAnomaly) {
-      this.VortexFocus =
-          ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
-        + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
-        + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
-        + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
-        + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
-        + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
-        + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0)
-        + (this.WindAnomalyBuildup >= 2 ? this.WindAnomalyBuildup : 0))
-        / 4;
+      this.VortexFocus = (baseDisorderSum + windAnomaly) / 4;
     } else {
-      this.DisorderFocus =
-          ((this.PhysicalAnomalyBuildup >= 2 ? this.PhysicalAnomalyBuildup : 0)
-        + (this.HonedEdgeAnomalyBuildup >= 2 ? this.HonedEdgeAnomalyBuildup : 0)
-        + (this.EtherAnomalyBuildup >= 2 ? this.EtherAnomalyBuildup : 0)
-        + (this.FireAnomalyBuildup >= 2 ? this.FireAnomalyBuildup : 0)
-        + (this.IceAnomalyBuildup >= 2 ? this.IceAnomalyBuildup : 0)
-        + (this.FrostAnomalyBuildup >= 2 ? this.FrostAnomalyBuildup : 0)
-        + (this.ElectricAnomalyBuildup >= 2 ? this.ElectricAnomalyBuildup : 0))
-        / 4;
+      this.DisorderFocus = baseDisorderSum / 4;
       if (this.DisorderFocus < 1 || !hasDisorder) {
         // Is this right? If !hasDisorder, won't this still be 0?
         this.DisorderFocus *= 0.25 * numPolarDisorders;
@@ -412,7 +413,14 @@ class Team {
   }
 
   StunDamageMultiplierOutsideWindow(multiplier) {
-    return this.PerChar('(name=="Ye Shunguang" ? 1 : ' + (this.StunUptime*0.1) + ') * (damageFocus+lacerationDamageBonusBenefit) * ' + multiplier);
+    const stunFactor = this.StunUptime * 0.1;
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
+    const v1 = (p1.name === "Ye Shunguang" ? 1 : stunFactor) * (p1.damageFocus + p1.lacerationDamageBonusBenefit) * multiplier;
+    const v2 = (p2.name === "Ye Shunguang" ? 1 : stunFactor) * (p2.damageFocus + p2.lacerationDamageBonusBenefit) * multiplier;
+    const v3 = (p3.name === "Ye Shunguang" ? 1 : stunFactor) * (p3.damageFocus + p3.lacerationDamageBonusBenefit) * multiplier;
+    return v1 + v2 + v3;
   }
 
   StunDamageMultiplier(multiplier) {
@@ -429,32 +437,88 @@ class Team {
 
   PerChar(calcExpression) {
     if (!calcExpression) return 0;
+    const expr = String(calcExpression);
 
-    if (!formulaCache[calcExpression]) {
-      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+    if (!formulaCache[expr]) {
+      formulaCache[expr] = compileBuffFunction(expr);
     }
 
-    const fn = formulaCache[calcExpression];
+    const fn = formulaCache[expr];
+    let charVals = perCharValCache[expr];
+    if (!charVals) {
+      charVals = new Float64Array(64);
+      charVals.fill(NaN);
+      perCharValCache[expr] = charVals;
+    }
+
     const p1 = this.p1;
     const p2 = this.p2;
     const p3 = this.p3;
 
-    return fn(p1) + fn(p2) + fn(p3);
+    let v1, v2, v3;
+    if (p1._cloned) {
+      v1 = fn(p1);
+    } else {
+      v1 = charVals[p1._cid];
+      if (v1 !== v1) { v1 = fn(p1); charVals[p1._cid] = v1; }
+    }
+    if (p2._cloned) {
+      v2 = fn(p2);
+    } else {
+      v2 = charVals[p2._cid];
+      if (v2 !== v2) { v2 = fn(p2); charVals[p2._cid] = v2; }
+    }
+    if (p3._cloned) {
+      v3 = fn(p3);
+    } else {
+      v3 = charVals[p3._cid];
+      if (v3 !== v3) { v3 = fn(p3); charVals[p3._cid] = v3; }
+    }
+
+    return v1 + v2 + v3;
   }
 
   MaxChar(calcExpression) {
     if (!calcExpression) return 0;
+    const expr = String(calcExpression);
 
-    if (!formulaCache[calcExpression]) {
-      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+    if (!formulaCache[expr]) {
+      formulaCache[expr] = compileBuffFunction(expr);
     }
 
-    const fn = formulaCache[calcExpression];
+    const fn = formulaCache[expr];
+    let charVals = maxCharValCache[expr];
+    if (!charVals) {
+      charVals = new Float64Array(64);
+      charVals.fill(NaN);
+      maxCharValCache[expr] = charVals;
+    }
+
     const p1 = this.p1;
     const p2 = this.p2;
     const p3 = this.p3;
 
-    return Math.max(fn(p1), fn(p2), fn(p3));
+    let v1, v2, v3;
+    if (p1._cloned) {
+      v1 = fn(p1);
+    } else {
+      v1 = charVals[p1._cid];
+      if (v1 !== v1) { v1 = fn(p1); charVals[p1._cid] = v1; }
+    }
+    if (p2._cloned) {
+      v2 = fn(p2);
+    } else {
+      v2 = charVals[p2._cid];
+      if (v2 !== v2) { v2 = fn(p2); charVals[p2._cid] = v2; }
+    }
+    if (p3._cloned) {
+      v3 = fn(p3);
+    } else {
+      v3 = charVals[p3._cid];
+      if (v3 !== v3) { v3 = fn(p3); charVals[p3._cid] = v3; }
+    }
+
+    return Math.max(v1, v2, v3);
   }
 
   Buff(attributes) {
@@ -465,26 +529,15 @@ class Team {
     const p1 = this.p1;
     const p2 = this.p2;
     const p3 = this.p3;
-    const attrLower = attributes.toLowerCase();
+    const attrLower = String(attributes).toLowerCase();
 
-    function isCounted(p) {
-      return attrLower.includes(p.attribute.toLowerCase());
-    }
+    const c1 = attrLower.includes(p1._attrLower);
+    const c2 = attrLower.includes(p2._attrLower);
+    const c3 = attrLower.includes(p3._attrLower);
 
-    const c1 = isCounted(p1);
-    const c2 = isCounted(p2);
-    const c3 = isCounted(p3);
-
-    function addForChar(p, isC, other1C, other2C) {
-      const isLumi = p.attribute.toLowerCase() === 'lumiflux';
-      if (isC || (isLumi && (other1C || other2C))) {
-        total += p.damageFocus*0.2 + p.stunBuildup*0.2 + p.anomalyBuildup*0.2;
-      }
-    }
-
-    addForChar(p1, c1, c2, c3);
-    addForChar(p2, c2, c1, c3);
-    addForChar(p3, c3, c1, c2);
+    if (c1 || (p1._isLumiflux && (c2 || c3))) total += p1._buffVal;
+    if (c2 || (p2._isLumiflux && (c1 || c3))) total += p2._buffVal;
+    if (c3 || (p3._isLumiflux && (c1 || c2))) total += p3._buffVal;
 
     return total;
   }
@@ -497,38 +550,30 @@ class Team {
     const p1 = this.p1;
     const p2 = this.p2;
     const p3 = this.p3;
-    const attrLower = attributes.toLowerCase();
+    const attrLower = String(attributes).toLowerCase();
 
-    function isListed(p) {
-      return attrLower.includes(p.attribute.toLowerCase());
-    }
+    const c1 = attrLower.includes(p1._attrLower);
+    const c2 = attrLower.includes(p2._attrLower);
+    const c3 = attrLower.includes(p3._attrLower);
 
-    const c1 = isListed(p1);
-    const c2 = isListed(p2);
-    const c3 = isListed(p3);
-
-    function subForChar(p, isC, other1C, other2C) {
-      const isLumi = p.attribute.toLowerCase() === 'lumiflux';
-      if (isC && (!isLumi || (other1C && other2C))) {
-        total -= p.damageFocus*0.2 + p.stunBuildup*0.2 + p.anomalyBuildup*0.2;
-      }
-    }
-
-    subForChar(p1, c1, c2, c3);
-    subForChar(p2, c2, c1, c3);
-    subForChar(p3, c3, c1, c2);
+    if (c1 && (!p1._isLumiflux || (c2 && c3))) total -= p1._buffVal;
+    if (c2 && (!p2._isLumiflux || (c1 && c3))) total -= p2._buffVal;
+    if (c3 && (!p3._isLumiflux || (c1 && c2))) total -= p3._buffVal;
 
     return total;
   }
 
   calculateBuff(calcExpression) {
     if (!calcExpression) return 0;
+    const expr = String(calcExpression);
 
-    if (!formulaCache[calcExpression]) {
-      formulaCache[calcExpression] = new Function("ctx", "with(ctx) { return Number(" + calcExpression + "); }");
+    let fn = fastTeamFormulaCache[expr];
+    if (!fn) {
+      fn = compileFastTeamFormula(expr, this);
+      fastTeamFormulaCache[expr] = fn;
     }
 
-    return formulaCache[calcExpression](this);
+    return fn(this);
   }
 }
 
@@ -777,7 +822,8 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
  * @return {Function} A function that takes a 'team' object and returns a number.
  */
 function compileBuffFunction(expression) {
-  if (!expression || expression === "0" || expression.trim() === "") {
+  const expr = String(expression || "");
+  if (!expr || expr === "0" || expr.trim() === "") {
     // Return a dummy function that always returns 0 (extremely fast)
     return function() { return 0; };
   }
@@ -785,10 +831,55 @@ function compileBuffFunction(expression) {
   // Create a function that takes 'ctx' (context/team) and executes the math
   // We use "Number()" to ensure the result is always a valid number.
   try {
-    return new Function("ctx", "with(ctx) { return Number(" + expression + "); }");
+    return new Function("ctx", "with(ctx) { return Number(" + expr + "); }");
   } catch (e) {
-    console.error("Failed to compile formula: " + expression, e);
+    console.error("Failed to compile formula: " + expr, e);
     return function() { return 0; };
+  }
+}
+
+/**
+ * Compiles a team buff formula using direct property destructuring instead of with(ctx)
+ * so V8 can JIT-optimize hot buff evaluations across all teams. Falls back to compileBuffFunction.
+ * @param {string} expression The formula string.
+ * @param {Team} sampleTeam A Team instance used to inspect available properties/methods.
+ * @return {Function} Compiled function taking a Team instance and returning a number.
+ */
+function compileFastTeamFormula(expression, sampleTeam) {
+  const expr = String(expression || "");
+  if (!expr || expr === "0" || expr.trim() === "") {
+    return function() { return 0; };
+  }
+
+  try {
+    const tokens = expr.match(/[A-Za-z_][A-Za-z0-9_]*/g) || [];
+    const uniqueTokens = Array.from(new Set(tokens));
+    const teamProps = [];
+    const teamMethods = [];
+    for (let i = 0; i < uniqueTokens.length; i++) {
+      const tok = uniqueTokens[i];
+      if (sampleTeam && (tok in sampleTeam)) {
+        if (typeof sampleTeam[tok] === "function") {
+          teamMethods.push(tok);
+        } else {
+          teamProps.push(tok);
+        }
+      }
+    }
+    let body = "";
+    if (teamProps.length > 0) {
+      body += "const { " + teamProps.join(", ") + " } = ctx;\n";
+    }
+    for (let i = 0; i < teamMethods.length; i++) {
+      const m = teamMethods[i];
+      body += "const " + m + " = (...args) => ctx." + m + "(...args);\n";
+    }
+    body += "return Number(" + expr + ");";
+    const fn = new Function("ctx", body);
+    if (sampleTeam) fn(sampleTeam);
+    return fn;
+  } catch (e) {
+    return compileBuffFunction(expr);
   }
 }
 
@@ -844,7 +935,8 @@ function chooseBestBuffForTeam(team, buffOptions) {
 // --- NEW GENERIC OPTIMIZER ---
 
 /**
- * Finds the optimal assignment of teams to buff slots to maximize total strength.
+ * Finds the optimal assignment of teams to buff slots to maximize the sheet sort metric
+ * (or total buff strength when base team strengths are not present).
  *
  * @param {Array<Object>} teamSlots - An array of "team slot" objects. Each object should
  * contain the team and any other data that should
@@ -853,12 +945,13 @@ function chooseBestBuffForTeam(team, buffOptions) {
  * @param {Array<Array<string>>} buffExpressionsList - An array of buff expression arrays,
  * one for each "slot".
  * Example: [ ['buffA'], ['buffB'] ]
+ * @param {Array<Object>} [buffOptions] - Optional selectable buff options per team.
  * @returns {Object} An object { optimizedSlots, bonuses, maxStrength }
- * - optimizedSlots: The re-ordered array of teamSlots for max strength.
+ * - optimizedSlots: The re-ordered array of teamSlots for optimal strength.
  * - bonuses: An array of calculated bonuses for each slot.
- * - maxStrength: The total maximized strength.
+ * - maxStrength: The total slot bonus strength for the chosen assignment.
  */
-function optimizeTeamAssignments(teamSlots, buffExpressionsList) {
+function optimizeTeamAssignments(teamSlots, buffExpressionsList, buffOptions) {
   const n = teamSlots.length;
 
   // --- Input Validation ---
@@ -878,12 +971,25 @@ function optimizeTeamAssignments(teamSlots, buffExpressionsList) {
   }
 
   // --- 1. Compute N x N Strength Matrix ---
-  // strengthMatrix[i][j] = strength of team `i` with buff slot `j`
+  // strengthMatrix[i][j] = bonus of team `i` with buff slot `j`
   const strengthMatrix = [];
+  const basePlusChosen = new Float64Array(n);
+  let hasBaseStrength = true;
+
   for (let i = 0; i < n; i++) { // i = team index
     strengthMatrix[i] = [];
+    const team = teamSlots[i] ? teamSlots[i].team : null;
+    if (!team || typeof team.strength !== "number") {
+      hasBaseStrength = false;
+    } else {
+      let chosenBonus = 0;
+      if (buffOptions && buffOptions.length > 0) {
+        const chosen = chooseBestBuffForTeam(team, buffOptions);
+        if (chosen) chosenBonus = chosen.bonus;
+      }
+      basePlusChosen[i] = team.strength + chosenBonus;
+    }
     for (let j = 0; j < n; j++) { // j = buff slot index
-      const team = teamSlots[i] ? teamSlots[i].team : null;
       strengthMatrix[i][j] = computeStrengthFromTeamBuffs(team, buffExpressionsList[j]);
     }
   }
@@ -894,21 +1000,48 @@ function optimizeTeamAssignments(teamSlots, buffExpressionsList) {
 
   // --- 3. Find Best Permutation ---
   let maxStrength = -Infinity;
+  let bestScore = -Infinity;
+  let bestTotalEff = -Infinity;
+  let bestMinEff = -Infinity;
   let bestPermutation = indices; // Default to no change
 
   // Iterate over each possible assignment permutation
   for (const perm of permutations) {
-    let currentStrength = 0;
+    let currentBonusSum = 0;
+    let totalEff = 0;
+    let minEff = Infinity;
     // perm is an array of team indices, e.g., [1, 0, 2]
     // This means team 1 goes to slot 0, team 0 to slot 1, team 2 to slot 2
     for (let j = 0; j < n; j++) { // j is the *slot index*
       const teamIndex = perm[j]; // team index assigned to slot j
-      currentStrength += strengthMatrix[teamIndex][j];
+      const slotBonus = strengthMatrix[teamIndex][j];
+      currentBonusSum += slotBonus;
+      if (hasBaseStrength) {
+        const eff = basePlusChosen[teamIndex] + slotBonus;
+        totalEff += eff;
+        if (eff < minEff) minEff = eff;
+      }
     }
 
-    if (currentStrength > maxStrength) {
-      maxStrength = currentStrength;
-      bestPermutation = perm;
+    if (!hasBaseStrength) {
+      if (currentBonusSum > maxStrength) {
+        maxStrength = currentBonusSum;
+        bestPermutation = perm;
+      }
+    } else {
+      const rMin = Math.round(minEff * 1000) / 1000;
+      const rTot = Math.round(totalEff * 1000) / 1000;
+      const score = 0.5 * rMin + 0.5 * (rTot / n);
+      if (
+        score > bestScore + 1e-9 ||
+        (Math.abs(score - bestScore) <= 1e-9 && (rTot > bestTotalEff || (rTot === bestTotalEff && rMin > bestMinEff)))
+      ) {
+        bestScore = score;
+        bestTotalEff = rTot;
+        bestMinEff = rMin;
+        maxStrength = currentBonusSum;
+        bestPermutation = perm;
+      }
     }
   }
 
@@ -1134,6 +1267,8 @@ function DEBUG_TEAM(char1, char2, char3) {
   delete debugObj.p1;
   delete debugObj.p2;
   delete debugObj.p3;
+  delete debugObj.charMaskLo;
+  delete debugObj.charMaskHi;
 
   return JSON.stringify(debugObj, null, 2);
 }

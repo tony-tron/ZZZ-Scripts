@@ -111,5 +111,9 @@ function setSortedTeamsCheckboxesAndGetOldValuesToRestoreLater(onlyIncludeBuilt,
   // We need to be sorted without any interference. Don't bother restoring this.
   sortToTopCheckbox.setValue(false);
 
+  if (typeof clearSortedTeamsCache === "function") {
+    clearSortedTeamsCache();
+  }
+
   return oldSortedTeamsCheckboxValues;
 }

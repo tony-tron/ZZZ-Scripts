@@ -4,7 +4,6 @@ const deadlyAssaultSheetName = "Deadly Assault";
 const recalculateDeadlyAssaultCheckbox = "H2";
 const deadlyAssaultDistinctTeamsA1 = "A2:E";
 const deadlyAssaultBuffsRangeA1 = "G8:H";
-const minDeadlyAssaultTeamStrengthA1 = "H4";
 const maxDeadlyAssaultOptionsA1 = "H5";
 
 function getDeadlyAssaultContext() {
@@ -12,7 +11,6 @@ function getDeadlyAssaultContext() {
   const distinctTeamsRange = sheet.getRange(deadlyAssaultDistinctTeamsA1);
   return {
     sheet: sheet,
-    minStrength: sheet.getRange(minDeadlyAssaultTeamStrengthA1).getValue(),
     maxOptions: sheet.getRange(maxDeadlyAssaultOptionsA1).getValue(),
     buffRange: sheet.getRange(deadlyAssaultBuffsRangeA1),
     distinctTeamsRange: distinctTeamsRange,
@@ -113,8 +111,8 @@ function updateDeadlyAssaultSheet() {
   const { team1BuffExpressions, team2BuffExpressions, team3BuffExpressions, buffOptions } = getDeadlyAssaultBuffExpressions(ctx.buffRange);
 
   clearDeadlyAssaultTeams(ctx.distinctTeamsRange);
-  const allTeams = getAllTeams(ctx.minStrength);
-  const teamTriples = computeBestDistinctTeamTriples(allTeams, team1BuffExpressions, team2BuffExpressions, team3BuffExpressions, buffOptions);
+  const allTeams = getAllTeams();
+  const teamTriples = computeBestDistinctTeamTriples(allTeams, team1BuffExpressions, team2BuffExpressions, team3BuffExpressions, buffOptions, ctx.maxOptions);
   const sortedTriples = teamTriples.sort((triple1, triple2) => (triple2.minStrength() - triple1.minStrength()) * 0.5 + (triple2.totalStrength()/3 - triple1.totalStrength()/3) * 0.5);
   updateDeadlyAssaultDistinctTeamsSheet(sortedTriples, ctx.sheet, ctx.startRow, ctx.startColumn, ctx.maxOptions);
 }
@@ -127,7 +125,7 @@ function clearDeadlyAssaultTeams(range) {
 function updateDeadlyAssaultDistinctTeamsSheet(teamTriples, sheet, startRow, startColumn, maxOptions) {
   const numOptions = Math.min(teamTriples.length, maxOptions);
   if (numOptions === 0) {
-    sheet.getRange(startRow, startColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
+    sheet.getRange(startRow, startColumn, 1, 3).setValue("No combination found").setHorizontalAlignment('center').mergeAcross();
     return;
   }
 

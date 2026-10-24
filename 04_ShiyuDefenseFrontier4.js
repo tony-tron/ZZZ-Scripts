@@ -2,7 +2,6 @@
 
 const shiyuDefenseFrontier4SheetName = "Shiyu Defense - Frontier 4";
 const shiyuDefenseFrontier4DistinctTeamsA1 = "A2:D";
-const minShiyuDefenseFrontier4TeamStrengthA1 = "G4";
 const maxShiyuDefenseFrontier4OptionsA1 = "G5";
 const recalculateShiyuDefenseFrontier4Checkbox = "G2";
 const shiyuDefenseFrontier4BuffsRangeA1 = "F8:G";
@@ -21,7 +20,6 @@ function getShiyuDefenseFrontier4Context() {
   const distinctTeamsRange = sheet.getRange(shiyuDefenseFrontier4DistinctTeamsA1);
   return {
     sheet: sheet,
-    minStrength: sheet.getRange(minShiyuDefenseFrontier4TeamStrengthA1).getValue(),
     maxOptions: sheet.getRange(maxShiyuDefenseFrontier4OptionsA1).getValue(),
     buffRange: sheet.getRange(shiyuDefenseFrontier4BuffsRangeA1),
     distinctTeamsRange: distinctTeamsRange,
@@ -73,8 +71,8 @@ function updateShiyuDefenseFrontier4Sheet() {
   const { team1Buffs, team2Buffs } = getShiyuDefenseFrontier4BuffExpressions(ctx.buffRange);
 
   clearShiyuDefenseFrontier4Teams(ctx.distinctTeamsRange);
-  const allTeams = getAllTeams(ctx.minStrength);
-  const teamPairs = computeBestDistinctTeamPairs(allTeams, team1Buffs, team2Buffs);
+  const allTeams = getAllTeams();
+  const teamPairs = computeBestDistinctTeamPairs(allTeams, team1Buffs, team2Buffs, undefined, ctx.maxOptions);
   const sortedPairs = teamPairs.sort((pair1, pair2) => (pair2.totalStrength()/2 - pair1.totalStrength()/2) * 0.5 + (pair2.minStrength() - pair1.minStrength()) * 0.5);
   updateShiyuDefenseFrontier4DistinctTeamsSheet(sortedPairs, ctx.sheet, ctx.startRow, ctx.startColumn, ctx.maxOptions);
 }
@@ -85,7 +83,7 @@ function clearShiyuDefenseFrontier4Teams(range) {
 
 function updateShiyuDefenseFrontier4DistinctTeamsSheet(teamPairs, sheet, startRow, startColumn, maxOptions) {
   if (teamPairs.length == 0) {
-    sheet.getRange(startRow, startColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross()
+    sheet.getRange(startRow, startColumn, 1, 3).setValue("No combination found").setHorizontalAlignment('center').mergeAcross()
   }
   var outputValues = [];
   var count = 0;

@@ -1,7 +1,6 @@
 /** @OnlyCurrentDoc */
 
 const shiyuDefenseFrontier5SheetName = "Shiyu Defense - Frontier 5";
-const minShiyuDefenseFrontier5TeamStrengthRange = "G4";
 const maxShiyuDefenseFrontier5OptionsRange = "G5";
 const recalculateShiyuDefenseFrontier5Checkbox = "G2";
 const shiyuDefenseFrontier5DistinctTeamsRange = "A2:D";
@@ -82,9 +81,9 @@ function initalizeShiyuDefenseFrontier5BuffExpressions() {
 function updateShiyuDefenseFrontier5Sheet() {
   initalizeShiyuDefenseFrontier5BuffExpressions();
   clearShiyuDefenseFrontier5Teams();
-  const minShiyuDefenseFrontier5TeamStrength = getShiyuDefenseFrontier5Sheet().getRange(minShiyuDefenseFrontier5TeamStrengthRange).getValue();
-  const allTeams = getAllTeams(minShiyuDefenseFrontier5TeamStrength);
-  const teamTriples = computeBestDistinctTeamTriples(allTeams, shiyuDefenseFrontier5Team1BuffExpressions, shiyuDefenseFrontier5Team2BuffExpressions, shiyuDefenseFrontier5Team3BuffExpressions);
+  const maxShiyuDefenseFrontier5Options = getShiyuDefenseFrontier5Sheet().getRange(maxShiyuDefenseFrontier5OptionsRange).getValue();
+  const allTeams = getAllTeams();
+  const teamTriples = computeBestDistinctTeamTriples(allTeams, shiyuDefenseFrontier5Team1BuffExpressions, shiyuDefenseFrontier5Team2BuffExpressions, shiyuDefenseFrontier5Team3BuffExpressions, undefined, maxShiyuDefenseFrontier5Options);
   const sortedTriples = teamTriples.sort((triple1, triple2) => (triple2.minStrength() - triple1.minStrength()) * 0.5 + (triple2.totalStrength()/3 - triple1.totalStrength()/3) * 0.5); 
   updateShiyuDefenseFrontier5DistinctTeamsSheet(sortedTriples);
 }
@@ -102,7 +101,7 @@ function updateShiyuDefenseFrontier5DistinctTeamsSheet(teamTriples) {
   const maxShiyuDefenseFrontier5Options = sheet.getRange(maxShiyuDefenseFrontier5OptionsRange).getValue();
 
   if (teamTriples.length == 0) {
-    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
+    sheet.getRange(shiyuDefenseFrontier5TeamsRow, shiyuDefenseFrontier5TeamsColumn, 1, 3).setValue("No combination found").setHorizontalAlignment('center').mergeAcross();
     return;
   }
 

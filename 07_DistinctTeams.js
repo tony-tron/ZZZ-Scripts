@@ -91,7 +91,6 @@ function initalizeBuffExpressions(buffsRange) {
  */
 function updateDistinctTeamsSheet() {
   const distinctTeamsSheet = getDistinctTeamsSheet();
-  const minTeamStrength = distinctTeamsSheet.getRange("H4").getValue();
   const maxOptions = distinctTeamsSheet.getRange("H5").getValue();
 
   const outputRangeHeader = distinctTeamsSheet.getRange("A1");
@@ -105,7 +104,7 @@ function updateDistinctTeamsSheet() {
   initalizeBuffExpressions(buffsRange); // Populates buffExpressionsList
   clearTeams(distinctTeamsOutputRange); // Clears the single output range
   
-  const allTeams = getAllTeams(minTeamStrength);
+  const allTeams = getAllTeams();
   const k = buffExpressionsList.length; // Number of distinct teams to find
 
   // --- Input Validation ---
@@ -119,15 +118,19 @@ function updateDistinctTeamsSheet() {
   }
 
   // Call the new generic computation function
-  const teams = computeBestDistinctTeams(allTeams, k);
+  const teams = computeBestDistinctTeams(allTeams, k, maxOptions);
   
   if (!teams) {
     distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol).setValue(`Error: computeBestDistinctTeams for k=${k} not found.`);
     return;
   }
   
-  // Sort results
-  const sortedTeams = teams.sort((a, b) => b.minStrength() - a.minStrength() || b.totalStrength() - a.totalStrength());
+  // Sort results: 50% weight to average strength, 50% weight to minimum strength
+  const sortedTeams = teams.sort((a, b) => {
+    const scoreA = (0.5 * a.minStrength()) + (0.5 * (a.totalStrength() / k));
+    const scoreB = (0.5 * b.minStrength()) + (0.5 * (b.totalStrength() / k));
+    return scoreB - scoreA || b.totalStrength() - a.totalStrength() || b.minStrength() - a.minStrength();
+  });
   
   // Call the new generic update function
   updateSheetWithTeams(sortedTeams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol);
@@ -137,21 +140,21 @@ function updateDistinctTeamsSheet() {
  * NEW: Helper function to call the correct computation logic.
  * Relies on functions from team_optimizer.js
  */
-function computeBestDistinctTeams(allTeams, k) {
+function computeBestDistinctTeams(allTeams, k, maxOptions) {
   // buffExpressionsList and buffOptions are global and will be
   // used by the functions below.
   switch (k) {
     case 1:
       // Note: Assumes computeBestDistinctTeamSingles exists in team_optimizer.js
-      return computeBestDistinctTeamSingles(allTeams, buffExpressionsList[0], buffOptions);
+      return computeBestDistinctTeamSingles(allTeams, buffExpressionsList[0], buffOptions, maxOptions);
     case 2:
-      return computeBestDistinctTeamPairs(allTeams, buffExpressionsList[0], buffExpressionsList[1], buffOptions);
+      return computeBestDistinctTeamPairs(allTeams, buffExpressionsList[0], buffExpressionsList[1], buffOptions, maxOptions);
     case 3:
-      return computeBestDistinctTeamTriples(allTeams, buffExpressionsList[0], buffExpressionsList[1], buffExpressionsList[2], buffOptions);
+      return computeBestDistinctTeamTriples(allTeams, buffExpressionsList[0], buffExpressionsList[1], buffExpressionsList[2], buffOptions, maxOptions);
     case 4:
-      return computeBestDistinctTeamQuads(allTeams, buffExpressionsList, buffOptions);
+      return computeBestDistinctTeamQuads(allTeams, buffExpressionsList, buffOptions, maxOptions);
     case 5:
-      return computeBestDistinctTeamQuints(allTeams, buffExpressionsList, buffOptions);
+      return computeBestDistinctTeamQuints(allTeams, buffExpressionsList, buffOptions, maxOptions);
     default:
       return [];
   }
@@ -166,7 +169,7 @@ function clearTeams(distinctTeamsOutputRange) {
  */
 function updateSheetWithTeams(teams, k, distinctTeamsSheet, maxOptions, outputRangeHeader, distinctTeamsOutputRow, distinctTeamsOutputCol) {
   if (teams.length === 0) {
-    distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol, 1, 5).setValue("No combination found, try lowering Min Strength").setHorizontalAlignment('center').mergeAcross();
+    distinctTeamsSheet.getRange(distinctTeamsOutputRow, distinctTeamsOutputCol, 1, 5).setValue("No combination found").setHorizontalAlignment('center').mergeAcross();
     return;
   }
 
