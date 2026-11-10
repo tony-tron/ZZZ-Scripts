@@ -1,0 +1,4 @@
+# Ignore git, agent configurations, and documentation from Apps Script pushes
+.agents/**
+.git/**
+**/*.md
