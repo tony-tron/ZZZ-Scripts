@@ -140,7 +140,8 @@ function SUPPORTED_TEAM_PROPERTIES() {
  * @customfunction
  */
 function SUPPORTED_CHAR_PROPERTIES() {
-  return Object.keys(getCharsToBuffParams().get('Anby'));
+  const params = getCharsToBuffParams().get('Anby');
+  return params ? Object.keys(params).filter(prop => !prop.startsWith('_')) : [];
 }
 
 /**
