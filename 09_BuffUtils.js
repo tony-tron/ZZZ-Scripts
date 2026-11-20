@@ -16,6 +16,10 @@ const fastTeamFormulaCache = {};
 let perCharValCache = {};
 let maxCharValCache = {};
 
+// Maximum combined on-field damage focus before crowding penalties apply.
+// A standard hypercarry (2.0) + on-field stunner with personal damage (1.0) = 3.0.
+const _DAMAGE_CROWDING_THRESHOLD = 3;
+
 // Initializes all of the params per character (aggregating for the team is done during Team instantiation).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
@@ -165,6 +169,67 @@ function initCharsToBuffParams() {
   return charsToBuffParams;
 }
 
+/**
+ * Scales an on-field damage dealer's damage outputs and offensive stat benefits
+ * when multiple on-field carries compete for field time.
+ * Clones the character params object (marking _cloned = true so PerChar/MaxChar
+ * caches are bypassed) without mutating the shared global params.
+ */
+function _applyDamageCrowding(charParams, factor) {
+  if (factor >= 1 || charParams.onFieldDamage <= 0) {
+    return charParams;
+  }
+
+  const p = charParams._cloned ? charParams : Object.assign({ _cloned: true }, charParams);
+
+  p.damageFocus *= factor;
+  p.onFieldDamage *= factor;
+  p.physicalDamage *= factor;
+  p.etherDamage *= factor;
+  p.fireDamage *= factor;
+  p.iceDamage *= factor;
+  p.electricDamage *= factor;
+  p.windDamage *= factor;
+  p.lumifluxDamage *= factor;
+  p.sheerDamage *= factor;
+
+  p.basicAttack *= factor;
+  p.dashAttack *= factor;
+  p.dodgeCounter *= factor;
+  p.assistFollowup *= factor;
+  p.specialAttack *= factor;
+  p.exSpecialAttack *= factor;
+  p.chainAttack *= factor;
+  p.ultimate *= factor;
+
+  p.anomalyDamage *= factor;
+  p.physicalAnomalyDamage *= factor;
+  p.etherAnomalyDamage *= factor;
+  p.fireAnomalyDamage *= factor;
+  p.iceAnomalyDamage *= factor;
+  p.electricAnomalyDamage *= factor;
+  p.windAnomalyDamage *= factor;
+  p.lumifluxAnomalyDamage *= factor;
+
+  p.aftershockDamage *= factor;
+  p.abloomDamage *= factor;
+
+  p.hpBenefit *= factor;
+  p.atkBenefit *= factor;
+  p.defBenefit *= factor;
+  p.resShredBenefit *= factor;
+  p.defShredBenefit *= factor;
+  p.damageBonusBenefit *= factor;
+  p.lacerationDamageBonusBenefit *= factor;
+  p.sharpDamageBonusBenefit *= factor;
+  p.critRateBenefit *= factor;
+  p.critDamageBenefit *= factor;
+
+  p._buffVal = p.damageFocus * 0.2 + p.stunBuildup * 0.2 + p.anomalyBuildup * 0.2;
+
+  return p;
+}
+
 // Aggregates all of the team params we can reference for buff calculations on the spreadsheet itself.
 class Team {
   constructor(char1, char2, char3) {
@@ -180,15 +245,27 @@ class Team {
 
     if (!globalP1 || !globalP2 || !globalP3) return;
 
-    this.p1 = globalP1._isDynamicChar ? Object.assign({ _cloned: true }, globalP1) : globalP1;
-    this.p2 = globalP2._isDynamicChar ? Object.assign({ _cloned: true }, globalP2) : globalP2;
-    this.p3 = globalP3._isDynamicChar ? Object.assign({ _cloned: true }, globalP3) : globalP3;
+    const rawOnFieldDamage = globalP1.onFieldDamage + globalP2.onFieldDamage + globalP3.onFieldDamage;
+    const damageCrowdingFactor = rawOnFieldDamage > _DAMAGE_CROWDING_THRESHOLD
+      ? _DAMAGE_CROWDING_THRESHOLD / rawOnFieldDamage
+      : 1;
+    this.DamageCrowdingFactor = damageCrowdingFactor;
+
+    let p1 = globalP1._isDynamicChar ? Object.assign({ _cloned: true }, globalP1) : globalP1;
+    let p2 = globalP2._isDynamicChar ? Object.assign({ _cloned: true }, globalP2) : globalP2;
+    let p3 = globalP3._isDynamicChar ? Object.assign({ _cloned: true }, globalP3) : globalP3;
+
+    if (damageCrowdingFactor < 1) {
+      p1 = _applyDamageCrowding(p1, damageCrowdingFactor);
+      p2 = _applyDamageCrowding(p2, damageCrowdingFactor);
+      p3 = _applyDamageCrowding(p3, damageCrowdingFactor);
+    }
+
+    this.p1 = p1;
+    this.p2 = p2;
+    this.p3 = p3;
     this.charMaskLo = globalP1._charMaskLo | globalP2._charMaskLo | globalP3._charMaskLo;
     this.charMaskHi = globalP1._charMaskHi | globalP2._charMaskHi | globalP3._charMaskHi;
-
-    const p1 = this.p1;
-    const p2 = this.p2;
-    const p3 = this.p3;
 
     this.NumSupport = p1.support + p2.support + p3.support;
     this.NumStun = p1.stun + p2.stun + p3.stun;
@@ -320,7 +397,7 @@ class Team {
        + this.EtherContamination * this.EtherDamage
        + this.FireContamination * this.FireDamage
        + this.IceContamination * this.IceDamage
-       + this.ElectricContamination * this.ElectricContamination
+       + this.ElectricContamination * this.ElectricDamage
        + this.LumifluxContamination * this.LumifluxDamage
        + contaminationBuff * this.WindDamage)
        * 0.1;
