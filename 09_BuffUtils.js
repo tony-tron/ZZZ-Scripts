@@ -16,10 +16,6 @@ const fastTeamFormulaCache = {};
 let perCharValCache = {};
 let maxCharValCache = {};
 
-// Maximum combined on-field damage focus before crowding penalties apply.
-// A standard hypercarry (2.0) + on-field stunner with personal damage (1.0) = 3.0.
-const _DAMAGE_CROWDING_THRESHOLD = 3;
-
 // Initializes all of the params per character (aggregating for the team is done during Team instantiation).
 function initCharsToBuffParams() {
   const charsToBuffParams = new Map();
@@ -169,67 +165,6 @@ function initCharsToBuffParams() {
   return charsToBuffParams;
 }
 
-/**
- * Scales an on-field damage dealer's damage outputs and offensive stat benefits
- * when multiple on-field carries compete for field time.
- * Clones the character params object (marking _cloned = true so PerChar/MaxChar
- * caches are bypassed) without mutating the shared global params.
- */
-function _applyDamageCrowding(charParams, factor) {
-  if (factor >= 1 || charParams.onFieldDamage <= 0) {
-    return charParams;
-  }
-
-  const p = charParams._cloned ? charParams : Object.assign({ _cloned: true }, charParams);
-
-  p.damageFocus *= factor;
-  p.onFieldDamage *= factor;
-  p.physicalDamage *= factor;
-  p.etherDamage *= factor;
-  p.fireDamage *= factor;
-  p.iceDamage *= factor;
-  p.electricDamage *= factor;
-  p.windDamage *= factor;
-  p.lumifluxDamage *= factor;
-  p.sheerDamage *= factor;
-
-  p.basicAttack *= factor;
-  p.dashAttack *= factor;
-  p.dodgeCounter *= factor;
-  p.assistFollowup *= factor;
-  p.specialAttack *= factor;
-  p.exSpecialAttack *= factor;
-  p.chainAttack *= factor;
-  p.ultimate *= factor;
-
-  p.anomalyDamage *= factor;
-  p.physicalAnomalyDamage *= factor;
-  p.etherAnomalyDamage *= factor;
-  p.fireAnomalyDamage *= factor;
-  p.iceAnomalyDamage *= factor;
-  p.electricAnomalyDamage *= factor;
-  p.windAnomalyDamage *= factor;
-  p.lumifluxAnomalyDamage *= factor;
-
-  p.aftershockDamage *= factor;
-  p.abloomDamage *= factor;
-
-  p.hpBenefit *= factor;
-  p.atkBenefit *= factor;
-  p.defBenefit *= factor;
-  p.resShredBenefit *= factor;
-  p.defShredBenefit *= factor;
-  p.damageBonusBenefit *= factor;
-  p.lacerationDamageBonusBenefit *= factor;
-  p.sharpDamageBonusBenefit *= factor;
-  p.critRateBenefit *= factor;
-  p.critDamageBenefit *= factor;
-
-  p._buffVal = p.damageFocus * 0.2 + p.stunBuildup * 0.2 + p.anomalyBuildup * 0.2;
-
-  return p;
-}
-
 // Aggregates all of the team params we can reference for buff calculations on the spreadsheet itself.
 class Team {
   constructor(char1, char2, char3) {
@@ -245,27 +180,15 @@ class Team {
 
     if (!globalP1 || !globalP2 || !globalP3) return;
 
-    const rawOnFieldDamage = globalP1.onFieldDamage + globalP2.onFieldDamage + globalP3.onFieldDamage;
-    const damageCrowdingFactor = rawOnFieldDamage > _DAMAGE_CROWDING_THRESHOLD
-      ? _DAMAGE_CROWDING_THRESHOLD / rawOnFieldDamage
-      : 1;
-    this.DamageCrowdingFactor = damageCrowdingFactor;
-
-    let p1 = globalP1._isDynamicChar ? Object.assign({ _cloned: true }, globalP1) : globalP1;
-    let p2 = globalP2._isDynamicChar ? Object.assign({ _cloned: true }, globalP2) : globalP2;
-    let p3 = globalP3._isDynamicChar ? Object.assign({ _cloned: true }, globalP3) : globalP3;
-
-    if (damageCrowdingFactor < 1) {
-      p1 = _applyDamageCrowding(p1, damageCrowdingFactor);
-      p2 = _applyDamageCrowding(p2, damageCrowdingFactor);
-      p3 = _applyDamageCrowding(p3, damageCrowdingFactor);
-    }
-
-    this.p1 = p1;
-    this.p2 = p2;
-    this.p3 = p3;
+    this.p1 = globalP1._isDynamicChar ? Object.assign({ _cloned: true }, globalP1) : globalP1;
+    this.p2 = globalP2._isDynamicChar ? Object.assign({ _cloned: true }, globalP2) : globalP2;
+    this.p3 = globalP3._isDynamicChar ? Object.assign({ _cloned: true }, globalP3) : globalP3;
     this.charMaskLo = globalP1._charMaskLo | globalP2._charMaskLo | globalP3._charMaskLo;
     this.charMaskHi = globalP1._charMaskHi | globalP2._charMaskHi | globalP3._charMaskHi;
+
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const p3 = this.p3;
 
     this.NumSupport = p1.support + p2.support + p3.support;
     this.NumStun = p1.stun + p2.stun + p3.stun;
@@ -400,7 +323,7 @@ class Team {
        + this.ElectricContamination * this.ElectricContamination
        + this.LumifluxContamination * this.LumifluxDamage
        + contaminationBuff * this.WindDamage)
-- 0.1;
+       * 0.1;
     this.ContaminationAnomalyBuildup =
         this.PhysicalContamination * this.PhysicalAnomalyBuildup
       + this.EtherContamination * this.EtherAnomalyBuildup
@@ -894,9 +817,9 @@ function _updateTeamForYuzuha(team, char1, char2, char3, char1Params, char2Param
 }
 
 /**
-- Compiles a formula string into an executable function.
-- @param {string} expression The formula string (e.g., "1 + damageFocus * 0.5").
-- @return {Function} A function that takes a 'team' object and returns a number.
+ * Compiles a formula string into an executable function.
+ * @param {string} expression The formula string (e.g., "1 + damageFocus * 0.5").
+ * @return {Function} A function that takes a 'team' object and returns a number.
  */
 function compileBuffFunction(expression) {
   const expr = String(expression || "");
@@ -916,11 +839,11 @@ function compileBuffFunction(expression) {
 }
 
 /**
-- Compiles a team buff formula using direct property destructuring instead of with(ctx)
-- so V8 can JIT-optimize hot buff evaluations across all teams. Falls back to compileBuffFunction.
-- @param {string} expression The formula string.
-- @param {Team} sampleTeam A Team instance used to inspect available properties/methods.
-- @return {Function} Compiled function taking a Team instance and returning a number.
+ * Compiles a team buff formula using direct property destructuring instead of with(ctx)
+ * so V8 can JIT-optimize hot buff evaluations across all teams. Falls back to compileBuffFunction.
+ * @param {string} expression The formula string.
+ * @param {Team} sampleTeam A Team instance used to inspect available properties/methods.
+ * @return {Function} Compiled function taking a Team instance and returning a number.
  */
 function compileFastTeamFormula(expression, sampleTeam) {
   const expr = String(expression || "");
@@ -961,19 +884,19 @@ function compileFastTeamFormula(expression, sampleTeam) {
 }
 
 /**
-- Rounds a number to the nearest 0.25.
-- @param {number} value The value to round.
-- @return {number} The rounded value.
+ * Rounds a number to the nearest 0.25.
+ * @param {number} value The value to round.
+ * @return {number} The rounded value.
  */
 function roundToQuarter(value) {
   return Math.round(value * 4) / 4;
 }
 
 /**
-- Calculates the total strength bonus for a single team from a list of buff expressions.
-- @param {object} team - A team object with a calculateBuff method.
-- @param {Array<string>} teamBuffExpressions - A list of buff expressions to apply.
-- @returns {number} The total calculated buff strength.
+ * Calculates the total strength bonus for a single team from a list of buff expressions.
+ * @param {object} team - A team object with a calculateBuff method.
+ * @param {Array<string>} teamBuffExpressions - A list of buff expressions to apply.
+ * @returns {number} The total calculated buff strength.
  */
 function computeStrengthFromTeamBuffs(team, teamBuffExpressions) {
   var addedStrength = 0;
@@ -982,10 +905,10 @@ function computeStrengthFromTeamBuffs(team, teamBuffExpressions) {
 }
 
 /**
-- Returns the name of the buff that computed the highest bonus, and that computed bonus.
-- @param {object} team - A team object with a calculateBuff method.
-- @param {object} buffOptions - A list of buff formulas that can be chosen for the team.
-- @returns {object | undefined} An object { name, bonus } or undefined.
+ * Returns the name of the buff that computed the highest bonus, and that computed bonus.
+ * @param {object} team - A team object with a calculateBuff method.
+ * @param {object} buffOptions - A list of buff formulas that can be chosen for the team.
+ * @returns {object | undefined} An object { name, bonus } or undefined.
  */
 function chooseBestBuffForTeam(team, buffOptions) {
   if (!buffOptions || buffOptions.length === 0) {
@@ -1012,21 +935,21 @@ function chooseBestBuffForTeam(team, buffOptions) {
 // --- NEW GENERIC OPTIMIZER ---
 
 /**
-- Finds the optimal assignment of teams to buff slots to maximize the sheet sort metric
-- (or total buff strength when base team strengths are not present).
+ * Finds the optimal assignment of teams to buff slots to maximize the sheet sort metric
+ * (or total buff strength when base team strengths are not present).
  *
-- @param {Array<Object>} teamSlots - An array of "team slot" objects. Each object should
-- contain the team and any other data that should
-- be re-ordered with it (e.g., bonus names).
-- Example: [{ team: teamA, name: 'Slot 1' }, { team: teamB, name: 'Slot 2' }]
-- @param {Array<Array<string>>} buffExpressionsList - An array of buff expression arrays,
-- one for each "slot".
-- Example: [ ['buffA'], ['buffB'] ]
-- @param {Array<Object>} [buffOptions] - Optional selectable buff options per team.
-- @returns {Object} An object { optimizedSlots, bonuses, maxStrength }
-- - optimizedSlots: The re-ordered array of teamSlots for optimal strength.
-- - bonuses: An array of calculated bonuses for each slot.
-- - maxStrength: The total slot bonus strength for the chosen assignment.
+ * @param {Array<Object>} teamSlots - An array of "team slot" objects. Each object should
+ * contain the team and any other data that should
+ * be re-ordered with it (e.g., bonus names).
+ * Example: [{ team: teamA, name: 'Slot 1' }, { team: teamB, name: 'Slot 2' }]
+ * @param {Array<Array<string>>} buffExpressionsList - An array of buff expression arrays,
+ * one for each "slot".
+ * Example: [ ['buffA'], ['buffB'] ]
+ * @param {Array<Object>} [buffOptions] - Optional selectable buff options per team.
+ * @returns {Object} An object { optimizedSlots, bonuses, maxStrength }
+ * - optimizedSlots: The re-ordered array of teamSlots for optimal strength.
+ * - bonuses: An array of calculated bonuses for each slot.
+ * - maxStrength: The total slot bonus strength for the chosen assignment.
  */
 function optimizeTeamAssignments(teamSlots, buffExpressionsList, buffOptions) {
   const n = teamSlots.length;
@@ -1141,9 +1064,9 @@ function optimizeTeamAssignments(teamSlots, buffExpressionsList, buffOptions) {
 }
 
 /**
-- Helper function to generate all permutations of an array.
-- @param {Array<any>} arr - The array to permute (e.g., [0, 1, 2])
-- @returns {Array<Array<any>>} An array of all possible permutations.
+ * Helper function to generate all permutations of an array.
+ * @param {Array<any>} arr - The array to permute (e.g., [0, 1, 2])
+ * @returns {Array<Array<any>>} An array of all possible permutations.
  */
 function getAllPermutations(arr) {
   const result = [];
@@ -1167,11 +1090,11 @@ function getAllPermutations(arr) {
 }
 
 /**
-- Helper to safely retrieve or construct a team object.
-- @param {string} char1
-- @param {string} char2
-- @param {string} char3
-- @returns {object|null} The team object or null if invalid.
+ * Helper to safely retrieve or construct a team object.
+ * @param {string} char1
+ * @param {string} char2
+ * @param {string} char3
+ * @returns {object|null} The team object or null if invalid.
  */
 function getTeamOrCreateSafe(char1, char2, char3) {
   const key = [char1, char2, char3].join("|");
@@ -1198,10 +1121,10 @@ function getTeamOrCreateSafe(char1, char2, char3) {
 }
 
 /**
-- Evaluates the javascript buff function based on the columns:
-- Character1 Character2 Character3 buffFunction
-- 
-- @customfunction
+ * Evaluates the javascript buff function based on the columns:
+ * Character1 Character2 Character3 buffFunction
+ * 
+ * @customfunction
  */
 function CALCULATE_BUFFS(charactersAndBuffExpressions) {
   const buffs = [];
@@ -1227,13 +1150,13 @@ function CALCULATE_BUFFS(charactersAndBuffExpressions) {
 }
 
 /**
-- Calculates buffs based on the internal team buff formulas of the characters provided.
-- Replaces the need to VLOOKUP formulas in the sheet.
+ * Calculates buffs based on the internal team buff formulas of the characters provided.
+ * Replaces the need to VLOOKUP formulas in the sheet.
  *
-- @param {Array<Array<string>>} teamRange The range of character names (e.g., F2:H).
-- @param {Array<string>} triggerRange, not used by the formula but invalidates the
--  cache if the values in the range change.
-- @customfunction
+ * @param {Array<Array<string>>} teamRange The range of character names (e.g., F2:H).
+ * @param {Array<string>} triggerRange, not used by the formula but invalidates the
+ *  cache if the values in the range change.
+ * @customfunction
  */
 function CALCULATE_TEAM_BUFFS(teamRange, triggerRange) {
   // 1. Initialize data once
@@ -1278,10 +1201,10 @@ function CALCULATE_TEAM_BUFFS(teamRange, triggerRange) {
 }
 
 /**
-- Evaluates the javascript buff function based on the columns:
-- Character1 Character2 Character3 char1HasSynergy char2HasSynergy char3HasSynergy char1BuffFunction char2BuffFunction char3BuffFunction
-- * (Synergy, as always, means the given character's Additional Ability is activated.)
-- * @customfunction
+ * Evaluates the javascript buff function based on the columns:
+ * Character1 Character2 Character3 char1HasSynergy char2HasSynergy char3HasSynergy char1BuffFunction char2BuffFunction char3BuffFunction
+ * * (Synergy, as always, means the given character's Additional Ability is activated.)
+ * * @customfunction
  */
 function CALCULATE_SYNERGY_BUFFS(data) {
   const results = [];
@@ -1317,12 +1240,12 @@ function CALCULATE_SYNERGY_BUFFS(data) {
 }
 
 /**
-- Debugs team calculations for a given team of 3 characters.
-- Accepts either 3 separate character arguments or an array/range of 3 characters.
-- @param {string|Array<string>|Array<Array<string>>} char1 First character or array/range of characters.
-- @param {string} [char2] Second character.
-- @param {string} [char3] Third character.
-- @customfunction
+ * Debugs team calculations for a given team of 3 characters.
+ * Accepts either 3 separate character arguments or an array/range of 3 characters.
+ * @param {string|Array<string>|Array<Array<string>>} char1 First character or array/range of characters.
+ * @param {string} [char2] Second character.
+ * @param {string} [char3] Third character.
+ * @customfunction
  */
 function DEBUG_TEAM(char1, char2, char3) {
   const characters = [char1, char2, char3]
